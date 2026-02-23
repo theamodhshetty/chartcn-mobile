@@ -61,6 +61,8 @@ jobs:
           npm pkg set version=${{ steps.version.outputs.version }}
 
       - name: Publish to npm
+        id: npm_publish
+        continue-on-error: true
         working-directory: packages/spec
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -70,6 +72,15 @@ jobs:
             exit 0
           fi
           npm publish --provenance --access public
+
+      - name: Report npm publish status
+        if: ${{ always() }}
+        run: |
+          if [ "${{ steps.npm_publish.outcome }}" = "success" ]; then
+            echo "npm publish: success" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "npm publish: failed (GitHub release will still be created)" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Pack spec package
         run: |
