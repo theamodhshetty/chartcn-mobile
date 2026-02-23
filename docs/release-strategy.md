@@ -31,7 +31,7 @@ Steps:
 ## npm Publishing
 
 - Required secret: `NPM_TOKEN` (Automation token with publish permission).
-- Package name: `@chartcn/spec`.
+- Package name: `@amodh/chartcn-spec` (set via repo variable).
 - Optional repo variable: `NPM_PACKAGE_NAME` to override package name at release time (useful if publishing under a different scope).
 - Publish command: `npm publish --provenance --access public`.
 - If `NPM_TOKEN` is missing, workflow skips npm publish and still ships the GitHub release artifact.

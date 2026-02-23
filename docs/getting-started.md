@@ -47,7 +47,7 @@ For Room-backed rows, use `RoomAdapter.fetchRows(...)`.
 From npm (after publish):
 
 ```bash
-npm install @chartcn/spec
+npm install @amodh/chartcn-spec
 ```
 
 From release artifact:
