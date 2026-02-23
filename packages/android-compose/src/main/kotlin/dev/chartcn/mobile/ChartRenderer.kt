@@ -287,7 +287,7 @@ private fun defaultPalette(index: Int): Color {
 
 private fun JsonElement?.toDoubleOrNull(): Double? {
   val primitive = this as? JsonPrimitive ?: return null
-  return primitive.doubleOrNull ?: primitive.content.toDoubleOrNull()
+  return primitive.content.toDoubleOrNull()
 }
 
 private fun JsonElement?.toLabel(): String {
