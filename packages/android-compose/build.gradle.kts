@@ -2,6 +2,7 @@ plugins {
   id("com.android.library") version "8.8.1"
   kotlin("android") version "2.1.10"
   kotlin("plugin.serialization") version "2.1.10"
+  kotlin("plugin.compose") version "2.1.10"
 }
 
 android {
@@ -15,10 +16,6 @@ android {
 
   buildFeatures {
     compose = true
-  }
-
-  composeOptions {
-    kotlinCompilerExtensionVersion = "1.5.15"
   }
 
   compileOptions {
