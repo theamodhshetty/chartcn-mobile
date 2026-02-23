@@ -68,12 +68,15 @@ jobs:
         continue-on-error: true
         working-directory: packages/spec
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN_PRIMARY: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN_FALLBACK: ${{ secrets.NPM_TOKEN1 }}
         run: |
-          if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            echo "NPM_TOKEN is not configured. Skipping npm publish."
+          TOKEN="${NODE_AUTH_TOKEN_FALLBACK:-$NODE_AUTH_TOKEN_PRIMARY}"
+          if [ -z "${TOKEN}" ]; then
+            echo "NPM_TOKEN/NPM_TOKEN1 is not configured. Skipping npm publish."
             exit 0
           fi
+          export NODE_AUTH_TOKEN="${TOKEN}"
           npm publish --provenance --access public
 
       - name: Report npm publish status

@@ -31,6 +31,7 @@ Steps:
 ## npm Publishing
 
 - Required secret: `NPM_TOKEN` (Automation token with publish permission).
+- Fallback secret supported: `NPM_TOKEN1` (used when `NPM_TOKEN` is empty).
 - Package name: `@amodh/chartcn-spec` (set via repo variable).
 - Optional repo variable: `NPM_PACKAGE_NAME` to override package name at release time (useful if publishing under a different scope).
 - Publish command: `npm publish --provenance --access public`.
