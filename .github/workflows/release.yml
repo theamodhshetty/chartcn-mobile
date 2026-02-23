@@ -59,6 +59,9 @@ jobs:
         run: |
           cd packages/spec
           npm pkg set version=${{ steps.version.outputs.version }}
+          if [ -n "${{ vars.NPM_PACKAGE_NAME }}" ]; then
+            npm pkg set name="${{ vars.NPM_PACKAGE_NAME }}"
+          fi
 
       - name: Publish to npm
         id: npm_publish
