@@ -37,11 +37,13 @@ pnpm install
 pnpm build
 ```
 
-To consume the spec model in other projects:
+To consume the current published spec package:
 
 ```bash
-npm install @chartcn/spec
+npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.3/chartcn-spec-0.1.3.tgz
 ```
+
+If/when you publish to npm, use `npm install @chartcn/spec`.
 
 ## Using It
 
