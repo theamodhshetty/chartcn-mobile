@@ -11,6 +11,7 @@
     "spec:resolve": "tsx packages/spec/src/resolve-registry.ts",
     "spec:migrate": "tsx packages/spec/src/migrate.ts",
     "spec:compat": "tsx packages/spec/src/compat.ts",
+    "spec:bench": "tsx packages/spec/src/benchmark.ts",
     "spec:build": "pnpm --filter @chartcn/spec run build",
     "spec:check": "pnpm spec:validate && pnpm spec:validate:registry",
     "typecheck": "tsc -p tsconfig.json",

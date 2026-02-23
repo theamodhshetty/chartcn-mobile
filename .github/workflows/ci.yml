@@ -21,6 +21,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm spec:check
       - run: pnpm spec:build
+      - name: Run spec benchmark harness
+        run: |
+          mkdir -p artifacts
+          pnpm spec:bench -- --iterations 120 --warmup 20 --rows 1200 --json artifacts/spec-benchmark.json
+      - name: Upload benchmark artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-benchmark
+          path: artifacts/spec-benchmark.json
 
   ios-tests:
     runs-on: macos-latest
