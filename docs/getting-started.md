@@ -42,13 +42,27 @@ ChartCNView(spec = spec, rows = rows)
 
 For Room-backed rows, use `RoomAdapter.fetchRows(...)`.
 
-## 5. Spec lifecycle operations
+## 5. Install spec package in another project
+
+From npm (after publish):
+
+```bash
+npm install @chartcn/spec
+```
+
+From release artifact:
+
+```bash
+npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.4/chartcn-spec-0.1.4.tgz
+```
+
+## 6. Spec lifecycle operations
 
 - Validate: `pnpm spec:validate <file>`
 - Migrate: `pnpm spec:migrate <file> --in-place`
 - Compat: `pnpm spec:compat <baseline> <candidate>`
 
-## 6. CI expectations
+## 7. CI expectations
 
 - Spec/type checks run on Ubuntu
 - Swift tests run on macOS

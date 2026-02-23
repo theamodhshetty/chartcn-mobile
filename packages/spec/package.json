@@ -2,6 +2,29 @@
   "name": "@chartcn/spec",
   "version": "0.1.0",
   "private": false,
+  "description": "Versioned ChartSpec schema and TypeScript model for reusable mobile charts",
+  "keywords": [
+    "chart",
+    "charts",
+    "spec",
+    "json-schema",
+    "mobile",
+    "ios",
+    "android",
+    "swiftui",
+    "jetpack-compose"
+  ],
+  "author": "Amodh Shetty",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theamodhshetty/chartcn-mobile.git",
+    "directory": "packages/spec"
+  },
+  "bugs": {
+    "url": "https://github.com/theamodhshetty/chartcn-mobile/issues"
+  },
+  "homepage": "https://github.com/theamodhshetty/chartcn-mobile/tree/main/packages/spec#readme",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

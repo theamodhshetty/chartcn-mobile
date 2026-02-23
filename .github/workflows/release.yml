@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +29,7 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install
         run: pnpm install --frozen-lockfile=false
@@ -53,10 +55,25 @@ jobs:
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Pack spec package
+      - name: Set spec package version
         run: |
           cd packages/spec
           npm pkg set version=${{ steps.version.outputs.version }}
+
+      - name: Publish to npm
+        if: ${{ secrets.NPM_TOKEN != '' }}
+        working-directory: packages/spec
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Skip npm publish (no token)
+        if: ${{ secrets.NPM_TOKEN == '' }}
+        run: echo "NPM_TOKEN is not configured. Skipping npm publish."
+
+      - name: Pack spec package
+        run: |
+          cd packages/spec
           npm pack
 
       - name: Collect artifacts

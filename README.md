@@ -1,5 +1,9 @@
 # chartcn-mobile
 
+[![CI](https://github.com/theamodhshetty/chartcn-mobile/actions/workflows/ci.yml/badge.svg)](https://github.com/theamodhshetty/chartcn-mobile/actions/workflows/ci.yml)
+[![Release](https://github.com/theamodhshetty/chartcn-mobile/actions/workflows/release.yml/badge.svg)](https://github.com/theamodhshetty/chartcn-mobile/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 A reusable chart system for mobile apps, inspired by the DX of shadcn/ui.
 
 `chartcn-mobile` does not replace chart engines. It standardizes:
@@ -37,13 +41,23 @@ pnpm install
 pnpm build
 ```
 
-To consume the current published spec package:
+Install from npm (preferred, once `NPM_TOKEN` is configured and a publish runs):
 
 ```bash
-npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.3/chartcn-spec-0.1.3.tgz
+npm install @chartcn/spec
 ```
 
-If/when you publish to npm, use `npm install @chartcn/spec`.
+Install from GitHub release tarball (available now):
+
+```bash
+npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.4/chartcn-spec-0.1.4.tgz
+```
+
+Enable automated npm publish:
+
+```bash
+gh secret set NPM_TOKEN --repo theamodhshetty/chartcn-mobile
+```
 
 ## Using It
 
@@ -76,3 +90,4 @@ See:
 - `GOVERNANCE.md` for roles and decision model.
 - `docs/versioning.md` for spec versioning/migration.
 - `docs/release-strategy.md` for OSS release process.
+- `docs/go-to-market.md` for launch and adoption plan.

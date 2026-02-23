@@ -23,8 +23,17 @@ Steps:
 
 1. Install dependencies.
 2. Run `pnpm spec:check`.
-3. Pack `@chartcn/spec` tarball.
-4. Upload artifact and create GitHub release.
+3. Set `@chartcn/spec` package version from tag.
+4. Publish `@chartcn/spec` to npm if `NPM_TOKEN` secret is configured.
+5. Pack `@chartcn/spec` tarball.
+6. Upload artifact and create GitHub release.
+
+## npm Publishing
+
+- Required secret: `NPM_TOKEN` (Automation token with publish permission).
+- Package name: `@chartcn/spec`.
+- Publish command: `npm publish --provenance --access public`.
+- If `NPM_TOKEN` is missing, workflow skips npm publish and still ships the GitHub release artifact.
 
 ## Security Gates
 
@@ -40,3 +49,4 @@ Before tagging:
 1. Migration notes updated for spec changes.
 2. Compatibility validated via `pnpm spec:compat` where relevant.
 3. Updated changelog/release notes include breaking changes and migration path.
+4. Confirm npm scope ownership and token validity (for npm publish path).
