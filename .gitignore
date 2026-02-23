@@ -6,3 +6,4 @@ build
 coverage
 *.log
 *.tgz
+packages/ios-swiftui/.build
