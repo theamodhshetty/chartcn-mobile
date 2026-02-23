@@ -51,6 +51,8 @@ Launched chartcn-mobile: reusable charts for iOS + Android with a versioned Char
 
 Repo: https://github.com/theamodhshetty/chartcn-mobile
 Latest release: https://github.com/theamodhshetty/chartcn-mobile/releases/latest
+npm: https://www.npmjs.com/package/@chartcn/spec
+Install: npm install @chartcn/spec
 ```
 
 ### LinkedIn
@@ -63,6 +65,8 @@ It standardizes chart specs, data adapters, and accessibility defaults across Sw
 If your team keeps rebuilding KPI cards and trend charts per project, this is designed to reduce that repeated effort.
 
 GitHub: https://github.com/theamodhshetty/chartcn-mobile
+npm: https://www.npmjs.com/package/@chartcn/spec
+Install: npm install @chartcn/spec
 ```
 
 ### Hacker News (Show HN)
@@ -76,6 +80,8 @@ Core idea: keep chart definition declarative (JSON ChartSpec), then map to Swift
 Includes schema validation, migration tooling, and compatibility checks.
 
 Repo: https://github.com/theamodhshetty/chartcn-mobile
+npm: https://www.npmjs.com/package/@chartcn/spec
+Install: npm install @chartcn/spec
 ```
 
 ### Reddit
@@ -89,6 +95,8 @@ It uses a versioned ChartSpec model with validation/migration tooling and runtim
 Would love feedback on API shape and missing chart primitives.
 
 Repo: https://github.com/theamodhshetty/chartcn-mobile
+npm: https://www.npmjs.com/package/@chartcn/spec
+Install: npm install @chartcn/spec
 ```
 
 ## 7-Day KPI Targets

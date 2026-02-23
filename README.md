@@ -91,3 +91,4 @@ See:
 - `docs/versioning.md` for spec versioning/migration.
 - `docs/release-strategy.md` for OSS release process.
 - `docs/go-to-market.md` for launch and adoption plan.
+- `docs/announcement-template.md` for future release announcements.
