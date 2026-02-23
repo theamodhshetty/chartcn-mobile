@@ -44,7 +44,7 @@ pnpm build
 Install from npm (preferred, once `NPM_TOKEN` is configured and a publish runs):
 
 ```bash
-npm install @amodh/chartcn-spec
+npm install @chartcn/spec
 ```
 
 Install from GitHub release tarball (available now):

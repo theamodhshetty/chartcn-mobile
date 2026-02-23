@@ -5,7 +5,7 @@ Versioned `ChartSpec` model for cross-platform mobile chart definitions.
 ## Install
 
 ```bash
-npm install @amodh/chartcn-spec
+npm install @chartcn/spec
 ```
 
 Fallback from GitHub release:
