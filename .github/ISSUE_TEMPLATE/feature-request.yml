@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a new chart capability, adapter, or developer workflow
+title: "[feature] "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - ChartSpec
+        - iOS SwiftUI package
+        - Android Compose package
+        - Registry/templates
+        - CLI/tooling
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What pain are you solving?
+      placeholder: Explain current limitations.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API and expected user workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing tools or approaches considered.
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who benefits, and what migration cost exists?

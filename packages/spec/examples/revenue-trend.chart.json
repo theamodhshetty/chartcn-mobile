@@ -1,0 +1,71 @@
+{
+  "specVersion": "1.0.0",
+  "id": "kpi.revenue.trend.v1",
+  "metadata": {
+    "name": "Revenue Trend",
+    "description": "Daily revenue trend with a 7-day moving average",
+    "tags": ["kpi", "trend", "revenue"],
+    "status": "stable",
+    "owners": ["growth-analytics"],
+    "updatedAt": "2026-02-23"
+  },
+  "data": {
+    "source": {
+      "adapter": "swiftdata",
+      "entity": "DailyRevenue",
+      "predicate": "date >= $range.start AND date <= $range.end",
+      "sort": [
+        { "field": "date", "direction": "asc" }
+      ],
+      "limit": 365
+    },
+    "dimensions": [
+      { "key": "date", "type": "time", "label": "Date" }
+    ],
+    "measures": [
+      { "key": "revenue", "type": "currency", "label": "Revenue", "currency": "INR" }
+    ],
+    "transforms": [
+      { "type": "movingAverage", "input": "revenue", "window": 7, "as": "revenue_ma7" }
+    ]
+  },
+  "visual": {
+    "chartType": "line",
+    "xField": "date",
+    "series": [
+      { "field": "revenue", "label": "Revenue", "renderer": "line", "style": { "color": "token.chart.primary", "lineWidth": 2 } },
+      { "field": "revenue_ma7", "label": "7d MA", "renderer": "line", "style": { "color": "token.chart.secondary", "lineWidth": 2, "dash": [4, 2] } }
+    ],
+    "legend": { "visible": true, "position": "top" },
+    "axes": {
+      "x": { "label": "Date" },
+      "y": { "label": "Revenue (INR)" }
+    },
+    "tooltip": { "enabled": true, "mode": "nearest" }
+  },
+  "formatting": {
+    "number": { "notation": "compact", "maximumFractionDigits": 1 },
+    "currency": { "code": "INR", "display": "symbol" },
+    "date": { "granularity": "day" }
+  },
+  "interactions": {
+    "selection": "single",
+    "gestures": ["tap", "pan", "pinch"]
+  },
+  "theming": {
+    "palette": "business-default",
+    "tokens": {
+      "token.chart.primary": "#1d4ed8",
+      "token.chart.secondary": "#06b6d4"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Revenue trend chart",
+    "summaryTemplate": "Revenue is {trendDirection} over the selected period. Latest value is {latestRevenue}.",
+    "announceOnLoad": true
+  },
+  "platformOverrides": {
+    "ios": { "interpolation": "monotone", "symbolSize": 3 },
+    "android": { "curveStyle": "smooth", "pointRadius": 2 }
+  }
+}

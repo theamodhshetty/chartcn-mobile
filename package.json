@@ -1,0 +1,27 @@
+{
+  "name": "chartcn-mobile",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Reusable mobile chart system with a versioned ChartSpec model",
+  "license": "MIT",
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "spec:validate": "tsx packages/spec/src/validate.ts",
+    "spec:validate:registry": "tsx packages/spec/src/validate-registry.ts",
+    "spec:resolve": "tsx packages/spec/src/resolve-registry.ts",
+    "spec:migrate": "tsx packages/spec/src/migrate.ts",
+    "spec:compat": "tsx packages/spec/src/compat.ts",
+    "spec:build": "pnpm --filter @chartcn/spec run build",
+    "spec:check": "pnpm spec:validate && pnpm spec:validate:registry",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "pnpm typecheck && pnpm spec:check && pnpm spec:build",
+    "test": "pnpm spec:check"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}

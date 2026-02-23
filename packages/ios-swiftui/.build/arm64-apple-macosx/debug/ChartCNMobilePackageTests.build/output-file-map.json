@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/master.swiftdeps"
+  },
+  "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.derived/runner.swift": {
+    "dependencies": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/runner.d",
+    "object": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/amodhshetty/Desktop/build_websites/opensource /chartcn-mobile/packages/ios-swiftui/.build/arm64-apple-macosx/debug/ChartCNMobilePackageTests.build/runner.dia"
+  }
+}

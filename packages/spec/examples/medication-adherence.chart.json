@@ -1,0 +1,57 @@
+{
+  "specVersion": "1.0.0",
+  "id": "health.adherence.weekly.v1",
+  "metadata": {
+    "name": "Medication Adherence",
+    "description": "Weekly adherence rate by week",
+    "tags": ["health", "adherence", "weekly"],
+    "status": "beta",
+    "owners": ["care-team"],
+    "updatedAt": "2026-02-23"
+  },
+  "data": {
+    "source": {
+      "adapter": "room",
+      "table": "adherence_events",
+      "where": "event_date >= ? AND event_date <= ?",
+      "args": ["$range.start", "$range.end"],
+      "orderBy": [{ "field": "event_date", "direction": "asc" }]
+    },
+    "dimensions": [
+      { "key": "week", "type": "string", "label": "Week" }
+    ],
+    "measures": [
+      { "key": "adherence_rate", "type": "percent", "label": "Adherence %", "unit": "%" }
+    ],
+    "transforms": [
+      {
+        "type": "group",
+        "by": ["week"],
+        "aggregations": [
+          { "field": "adherence_rate", "op": "avg", "as": "adherence_rate" }
+        ]
+      }
+    ]
+  },
+  "visual": {
+    "chartType": "bar",
+    "xField": "week",
+    "series": [
+      {
+        "field": "adherence_rate",
+        "label": "Adherence",
+        "renderer": "bar",
+        "style": { "color": "token.chart.success" }
+      }
+    ],
+    "axes": {
+      "x": { "label": "Week" },
+      "y": { "label": "Adherence %", "min": 0, "max": 100 }
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Weekly medication adherence",
+    "summaryTemplate": "Average adherence this period is {avgAdherencePercent} percent.",
+    "announceOnLoad": true
+  }
+}

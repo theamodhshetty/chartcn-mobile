@@ -1,0 +1,76 @@
+# chartcn-mobile
+
+A reusable chart system for mobile apps, inspired by the DX of shadcn/ui.
+
+`chartcn-mobile` does not replace chart engines. It standardizes:
+
+- chart specification (`ChartSpec`)
+- data adapters (SwiftData, Room, SQLDelight, API)
+- shared theming tokens
+- accessibility defaults
+- reusable chart recipes
+
+## Why
+
+Teams repeatedly rebuild the same mobile chart surfaces: KPI cards, trend lines, segmented bars, and dashboard widgets. This project provides a consistent, open-source foundation for iOS and Android.
+
+## Core Principles
+
+1. Adopt existing chart engines (`Swift Charts`, Compose chart libs) and add a thin reuse layer.
+2. Keep `ChartSpec` declarative, versioned, and portable.
+3. Make data-source wiring explicit and testable.
+4. Ship accessibility and governance from day one.
+
+## Repo Layout
+
+- `packages/spec`: JSON Schema and typed model for `ChartSpec`.
+- `packages/ios-swiftui`: iOS integration scaffold for SwiftUI + SwiftData.
+- `packages/android-compose`: Android integration scaffold for Compose + Room.
+- `registry`: reusable chart recipes.
+- `examples`: end-to-end demo app docs.
+- `docs`: architecture, spec guide, and project management docs.
+
+## Quick Start
+
+```bash
+pnpm install
+pnpm build
+```
+
+To consume the spec model in other projects:
+
+```bash
+npm install @chartcn/spec
+```
+
+## Using It
+
+1. Pick a registry item from `registry/dashboards`.
+2. Resolve it to a concrete spec:
+
+```bash
+pnpm spec:resolve registry/dashboards/kpi-revenue-trend.chart.json --output ./my-chart.json
+```
+
+3. Load the spec in your platform package:
+- iOS: `ChartSpecLoader.load(...)` + `ChartCNView(spec:rows:)`
+- Android: `ChartSpecParser.parse(...)` + `ChartCNView(spec, rows)`
+
+## Spec Tooling
+
+- `pnpm spec:validate`: schema + semantic checks on specs.
+- `pnpm spec:validate:registry`: validates registry entries and resolved source specs.
+- `pnpm spec:resolve -- <registry-item.json> --output <resolved.json>`: resolves registry entry to a concrete spec.
+- `pnpm spec:migrate -- <file.json> --in-place`: migrates spec to current runtime version.
+- `pnpm spec:compat -- <baseline.json> <candidate.json>`: compatibility gate check.
+- `pnpm spec:build`: builds distributable `@chartcn/spec` artifacts into `packages/spec/dist`.
+
+## Status
+
+Active MVP implementation.
+
+See:
+- `ROADMAP.md` for milestones.
+- `GOVERNANCE.md` for roles and decision model.
+- `docs/versioning.md` for spec versioning/migration.
+- `docs/release-strategy.md` for OSS release process.
