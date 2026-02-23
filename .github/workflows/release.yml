@@ -61,15 +61,15 @@ jobs:
           npm pkg set version=${{ steps.version.outputs.version }}
 
       - name: Publish to npm
-        if: ${{ secrets.NPM_TOKEN != '' }}
         working-directory: packages/spec
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --provenance --access public
-
-      - name: Skip npm publish (no token)
-        if: ${{ secrets.NPM_TOKEN == '' }}
-        run: echo "NPM_TOKEN is not configured. Skipping npm publish."
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "NPM_TOKEN is not configured. Skipping npm publish."
+            exit 0
+          fi
+          npm publish --provenance --access public
 
       - name: Pack spec package
         run: |
