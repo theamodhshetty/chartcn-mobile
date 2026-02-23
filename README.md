@@ -50,7 +50,7 @@ npm install @chartcn/spec
 Install from GitHub release tarball (available now):
 
 ```bash
-npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.4/chartcn-spec-0.1.4.tgz
+npm install https://github.com/theamodhshetty/chartcn-mobile/releases/latest/download/chartcn-spec-latest.tgz
 ```
 
 Enable automated npm publish:

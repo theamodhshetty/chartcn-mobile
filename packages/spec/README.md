@@ -11,7 +11,7 @@ npm install @chartcn/spec
 Fallback from GitHub release:
 
 ```bash
-npm install https://github.com/theamodhshetty/chartcn-mobile/releases/download/v0.1.4/chartcn-spec-0.1.4.tgz
+npm install https://github.com/theamodhshetty/chartcn-mobile/releases/latest/download/chartcn-spec-latest.tgz
 ```
 
 ## Contents

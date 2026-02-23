@@ -80,6 +80,8 @@ jobs:
         run: |
           mkdir -p release-artifacts
           cp packages/spec/*.tgz release-artifacts/
+          LATEST_PACKAGE="$(ls packages/spec/*.tgz | head -n 1)"
+          cp "${LATEST_PACKAGE}" release-artifacts/chartcn-spec-latest.tgz
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
