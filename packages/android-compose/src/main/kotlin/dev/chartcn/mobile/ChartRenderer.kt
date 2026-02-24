@@ -29,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.input.pointer.consume
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -224,6 +223,7 @@ private fun CartesianCanvas(
   val seriesOrder = remember(spec) { spec.visual.series.map { it.field } }
   val xCount = max(1, xLabels.size)
   val gridColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
+  val crosshairColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
   val pointRadius = (spec.platformOverrides?.android?.pointRadius?.toFloat() ?: 5f)
     .coerceAtLeast(2f)
 
@@ -235,14 +235,14 @@ private fun CartesianCanvas(
       .pointerInput(xLabels, selectionEnabled) {
         if (!selectionEnabled || xLabels.isEmpty()) return@pointerInput
         detectTapGestures { offset ->
-          onSelectionChanged(nearestIndex(offset.x, size.width, xCount))
+          onSelectionChanged(nearestIndex(offset.x, size.width.toFloat(), xCount))
         }
       }
       .pointerInput(xLabels, selectionEnabled) {
         if (!selectionEnabled || xLabels.isEmpty()) return@pointerInput
         detectDragGestures(
           onDragStart = { offset ->
-            onSelectionChanged(nearestIndex(offset.x, size.width, xCount))
+            onSelectionChanged(nearestIndex(offset.x, size.width.toFloat(), xCount))
           },
           onDragEnd = {
             onSelectionChanged(null)
@@ -251,8 +251,7 @@ private fun CartesianCanvas(
             onSelectionChanged(null)
           },
           onDrag = { change, _ ->
-            onSelectionChanged(nearestIndex(change.position.x, size.width, xCount))
-            change.consume()
+            onSelectionChanged(nearestIndex(change.position.x, size.width.toFloat(), xCount))
           }
         )
       }
@@ -340,7 +339,7 @@ private fun CartesianCanvas(
       }
 
       drawLine(
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+        color = crosshairColor,
         start = Offset(crosshairX, 0f),
         end = Offset(crosshairX, height),
         strokeWidth = 1f
