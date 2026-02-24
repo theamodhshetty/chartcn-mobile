@@ -28,3 +28,16 @@ Supported flags:
 The `CI` workflow runs a lightweight benchmark profile on every PR and push to `main`, then uploads `spec-benchmark.json` as an artifact.
 
 Use artifact history to compare trends between commits. Keep comparisons directional, not absolute, because GitHub runner noise can shift raw timings.
+
+## Runtime Rendering Guardrails
+
+Runtime chart renderers apply viewport optimization for dense cartesian charts:
+
+- Windowing: keep the most recent x-axis buckets.
+- Downsampling: cap plotted buckets after windowing.
+- Interaction: nearest-point selection with crosshair and value summary.
+
+Current defaults:
+
+- `line`, `area`, `scatter`, `combo`: window `420`, sample `180`.
+- `bar`: window `260`, sample `140`.

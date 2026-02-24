@@ -2,6 +2,8 @@ package dev.chartcn.mobile
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,10 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -23,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.consume
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -31,6 +39,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 @Composable
 fun ChartCNView(
@@ -38,11 +47,34 @@ fun ChartCNView(
   rows: List<ChartRow>,
   modifier: Modifier = Modifier
 ) {
-  val points = remember(spec, rows) { ChartDataPipeline.points(spec, rows) }
+  val rawPoints = remember(spec, rows) { ChartDataPipeline.points(spec, rows) }
+  val points = remember(rawPoints, spec) {
+    ChartDataPipeline.optimizeForViewport(
+      points = rawPoints,
+      chartType = spec.visual.chartType,
+      seriesOrder = spec.visual.series.map { it.field }
+    )
+  }
   val xLabels = remember(points) { buildXAxisLabels(points) }
   val seriesByField = remember(spec) { spec.visual.series.associateBy { it.field } }
   val seriesColors = remember(spec) { buildSeriesColorMap(spec) }
   val pieSlices = remember(spec, rows) { buildPieSlices(spec, rows) }
+  val seriesOrderMap = remember(spec) {
+    spec.visual.series.mapIndexed { index, series -> series.field to index }.toMap()
+  }
+  var selectedXIndex by remember(spec, rows) { mutableStateOf<Int?>(null) }
+
+  val selectedPoints = remember(points, selectedXIndex, seriesOrderMap) {
+    val index = selectedXIndex ?: return@remember emptyList()
+    points
+      .filter { it.xIndex == index }
+      .sortedWith(
+        compareBy<ChartPoint>(
+          { seriesOrderMap[it.seriesField] ?: Int.MAX_VALUE },
+          { it.seriesField }
+        )
+      )
+  }
 
   Column(
     modifier = modifier
@@ -71,15 +103,85 @@ fun ChartCNView(
       return@Column
     }
 
+    val selectionEnabled = selectionEnabled(spec, xLabels.isNotEmpty())
+
     when (spec.visual.chartType) {
-      ChartType.LINE -> CartesianCanvas(points, xLabels, spec, seriesByField, seriesColors, mode = CartesianMode.LINE)
-      ChartType.BAR -> CartesianCanvas(points, xLabels, spec, seriesByField, seriesColors, mode = CartesianMode.BAR)
-      ChartType.AREA -> CartesianCanvas(points, xLabels, spec, seriesByField, seriesColors, mode = CartesianMode.AREA)
-      ChartType.SCATTER -> CartesianCanvas(points, xLabels, spec, seriesByField, seriesColors, mode = CartesianMode.SCATTER)
-      ChartType.COMBO -> CartesianCanvas(points, xLabels, spec, seriesByField, seriesColors, mode = CartesianMode.COMBO)
+      ChartType.LINE -> CartesianCanvas(
+        points = points,
+        xLabels = xLabels,
+        spec = spec,
+        seriesByField = seriesByField,
+        seriesColors = seriesColors,
+        mode = CartesianMode.LINE,
+        selectionEnabled = selectionEnabled,
+        selectedXIndex = selectedXIndex,
+        onSelectionChanged = { selectedXIndex = it }
+      )
+
+      ChartType.BAR -> CartesianCanvas(
+        points = points,
+        xLabels = xLabels,
+        spec = spec,
+        seriesByField = seriesByField,
+        seriesColors = seriesColors,
+        mode = CartesianMode.BAR,
+        selectionEnabled = selectionEnabled,
+        selectedXIndex = selectedXIndex,
+        onSelectionChanged = { selectedXIndex = it }
+      )
+
+      ChartType.AREA -> CartesianCanvas(
+        points = points,
+        xLabels = xLabels,
+        spec = spec,
+        seriesByField = seriesByField,
+        seriesColors = seriesColors,
+        mode = CartesianMode.AREA,
+        selectionEnabled = selectionEnabled,
+        selectedXIndex = selectedXIndex,
+        onSelectionChanged = { selectedXIndex = it }
+      )
+
+      ChartType.SCATTER -> CartesianCanvas(
+        points = points,
+        xLabels = xLabels,
+        spec = spec,
+        seriesByField = seriesByField,
+        seriesColors = seriesColors,
+        mode = CartesianMode.SCATTER,
+        selectionEnabled = selectionEnabled,
+        selectedXIndex = selectedXIndex,
+        onSelectionChanged = { selectedXIndex = it }
+      )
+
+      ChartType.COMBO -> CartesianCanvas(
+        points = points,
+        xLabels = xLabels,
+        spec = spec,
+        seriesByField = seriesByField,
+        seriesColors = seriesColors,
+        mode = CartesianMode.COMBO,
+        selectionEnabled = selectionEnabled,
+        selectedXIndex = selectedXIndex,
+        onSelectionChanged = { selectedXIndex = it }
+      )
+
       ChartType.PIE -> PieCanvas(slices = pieSlices, donut = false)
       ChartType.DONUT -> PieCanvas(slices = pieSlices, donut = true)
       ChartType.KPI -> KpiView(spec, rows)
+    }
+
+    if (selectionEnabled && selectedXIndex != null && selectedPoints.isNotEmpty()) {
+      SelectionSummary(
+        xLabel = xLabels.getOrNull(selectedXIndex ?: -1).orEmpty(),
+        points = selectedPoints,
+        colorForSeries = { field ->
+          seriesColors[field] ?: defaultPalette(seriesOrderMap[field] ?: 0)
+        },
+        valueFormatter = { value ->
+          formatValue(spec, value)
+        }
+      )
     }
 
     if (shouldShowLegend(spec)) {
@@ -107,7 +209,10 @@ private fun CartesianCanvas(
   spec: ChartSpec,
   seriesByField: Map<String, Series>,
   seriesColors: Map<String, Color>,
-  mode: CartesianMode
+  mode: CartesianMode,
+  selectionEnabled: Boolean,
+  selectedXIndex: Int?,
+  onSelectionChanged: (Int?) -> Unit
 ) {
   val rawMin = points.minOfOrNull { it.yValue } ?: 0.0
   val rawMax = points.maxOfOrNull { it.yValue } ?: 1.0
@@ -127,6 +232,30 @@ private fun CartesianCanvas(
       .fillMaxWidth()
       .height(240.dp)
       .padding(top = 10.dp)
+      .pointerInput(xLabels, selectionEnabled) {
+        if (!selectionEnabled || xLabels.isEmpty()) return@pointerInput
+        detectTapGestures { offset ->
+          onSelectionChanged(nearestIndex(offset.x, size.width, xCount))
+        }
+      }
+      .pointerInput(xLabels, selectionEnabled) {
+        if (!selectionEnabled || xLabels.isEmpty()) return@pointerInput
+        detectDragGestures(
+          onDragStart = { offset ->
+            onSelectionChanged(nearestIndex(offset.x, size.width, xCount))
+          },
+          onDragEnd = {
+            onSelectionChanged(null)
+          },
+          onDragCancel = {
+            onSelectionChanged(null)
+          },
+          onDrag = { change, _ ->
+            onSelectionChanged(nearestIndex(change.position.x, size.width, xCount))
+            change.consume()
+          }
+        )
+      }
   ) {
     val width = size.width
     val height = size.height
@@ -157,23 +286,65 @@ private fun CartesianCanvas(
         val x = point.xIndex * xStep
         val normalizedY = ((point.yValue - yMin) / safeRange).toFloat()
         val y = height - (normalizedY * height)
-        Offset(x.toFloat(), y)
+        PlotPoint(
+          offset = Offset(x.toFloat(), y),
+          xIndex = point.xIndex
+        )
       }
 
       when (mode) {
-        CartesianMode.LINE -> drawLineSeries(positions, color, lineWidth, pointRadius)
-        CartesianMode.BAR -> drawBarSeries(positions, seriesIndex, seriesOrder.size, xStep, height, color)
-        CartesianMode.AREA -> drawAreaSeries(positions, color, lineWidth, height)
-        CartesianMode.SCATTER -> drawScatterSeries(positions, color, pointRadius + 1f)
+        CartesianMode.LINE -> drawLineSeries(positions, color, lineWidth, pointRadius, selectedXIndex)
+        CartesianMode.BAR -> drawBarSeries(
+          positions = positions,
+          seriesIndex = seriesIndex,
+          seriesCount = seriesOrder.size,
+          xStep = xStep,
+          canvasHeight = height,
+          color = color,
+          selectedXIndex = selectedXIndex
+        )
+
+        CartesianMode.AREA -> drawAreaSeries(
+          positions = positions,
+          color = color,
+          lineWidth = lineWidth,
+          canvasHeight = height,
+          selectedXIndex = selectedXIndex
+        )
+
+        CartesianMode.SCATTER -> drawScatterSeries(positions, color, pointRadius + 1f, selectedXIndex)
         CartesianMode.COMBO -> {
           val renderer = seriesByField[seriesField]?.renderer
           if (renderer == "bar") {
-            drawBarSeries(positions, seriesIndex, seriesOrder.size, xStep, height, color)
+            drawBarSeries(
+              positions = positions,
+              seriesIndex = seriesIndex,
+              seriesCount = seriesOrder.size,
+              xStep = xStep,
+              canvasHeight = height,
+              color = color,
+              selectedXIndex = selectedXIndex
+            )
           } else {
-            drawLineSeries(positions, color, lineWidth, pointRadius)
+            drawLineSeries(positions, color, lineWidth, pointRadius, selectedXIndex)
           }
         }
       }
+    }
+
+    if (selectionEnabled && selectedXIndex != null) {
+      val crosshairX = if (xCount <= 1) {
+        width / 2f
+      } else {
+        selectedXIndex.coerceIn(0, xCount - 1) * xStep
+      }
+
+      drawLine(
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+        start = Offset(crosshairX, 0f),
+        end = Offset(crosshairX, height),
+        strokeWidth = 1f
+      )
     }
   }
 
@@ -241,6 +412,56 @@ private fun KpiView(spec: ChartSpec, rows: List<ChartRow>) {
 }
 
 @Composable
+private fun SelectionSummary(
+  xLabel: String,
+  points: List<ChartPoint>,
+  colorForSeries: (String) -> Color,
+  valueFormatter: (Double) -> String
+) {
+  Column(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(top = 10.dp)
+      .background(
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = RoundedCornerShape(10.dp)
+      )
+      .padding(10.dp),
+    verticalArrangement = Arrangement.spacedBy(6.dp)
+  ) {
+    Text(
+      text = xLabel,
+      style = MaterialTheme.typography.labelMedium,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+
+    points.forEach { point ->
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Box(
+            modifier = Modifier
+              .size(8.dp)
+              .background(color = colorForSeries(point.seriesField), shape = CircleShape)
+          )
+          Text(text = point.seriesLabel, style = MaterialTheme.typography.labelMedium)
+        }
+        Text(
+          text = valueFormatter(point.yValue),
+          style = MaterialTheme.typography.labelMedium
+        )
+      }
+    }
+  }
+}
+
+@Composable
 private fun AxisLabels(labels: List<String>) {
   val first = labels.firstOrNull().orEmpty()
   val middle = labels.getOrNull(labels.size / 2).orEmpty()
@@ -298,6 +519,15 @@ private fun LegendItem(label: String, color: Color) {
   }
 }
 
+private fun selectionEnabled(spec: ChartSpec, hasXAxisValues: Boolean): Boolean {
+  if (!hasXAxisValues) return false
+  if (spec.visual.chartType !in listOf(ChartType.LINE, ChartType.BAR, ChartType.AREA, ChartType.SCATTER, ChartType.COMBO)) {
+    return false
+  }
+  if (spec.visual.tooltip?.enabled == false) return false
+  return spec.interactions?.selection != "none"
+}
+
 private fun shouldShowLegend(spec: ChartSpec): Boolean {
   if (spec.visual.legend?.visible == false) return false
   return when (spec.visual.chartType) {
@@ -343,78 +573,130 @@ private fun buildPieSlices(spec: ChartSpec, rows: List<ChartRow>): List<Slice> {
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawLineSeries(
-  positions: List<Offset>,
+  positions: List<PlotPoint>,
   color: Color,
   lineWidth: Float,
-  pointRadius: Float
+  pointRadius: Float,
+  selectedXIndex: Int?
 ) {
   if (positions.isEmpty()) return
   positions.zipWithNext { left, right ->
-    drawLine(color = color, start = left, end = right, strokeWidth = lineWidth)
+    drawLine(
+      color = color.copy(alpha = pointAlpha(selectedXIndex, left.xIndex)),
+      start = left.offset,
+      end = right.offset,
+      strokeWidth = lineWidth
+    )
   }
-  positions.forEach { offset ->
-    drawCircle(color = color, radius = pointRadius, center = offset)
+  positions.forEach { point ->
+    drawCircle(
+      color = color.copy(alpha = pointAlpha(selectedXIndex, point.xIndex)),
+      radius = pointRadius,
+      center = point.offset
+    )
   }
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawScatterSeries(
-  positions: List<Offset>,
+  positions: List<PlotPoint>,
   color: Color,
-  pointRadius: Float
+  pointRadius: Float,
+  selectedXIndex: Int?
 ) {
-  positions.forEach { offset ->
-    drawCircle(color = color, radius = pointRadius, center = offset)
+  positions.forEach { point ->
+    drawCircle(
+      color = color.copy(alpha = pointAlpha(selectedXIndex, point.xIndex)),
+      radius = pointRadius,
+      center = point.offset
+    )
   }
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBarSeries(
-  positions: List<Offset>,
+  positions: List<PlotPoint>,
   seriesIndex: Int,
   seriesCount: Int,
   xStep: Float,
   canvasHeight: Float,
-  color: Color
+  color: Color,
+  selectedXIndex: Int?
 ) {
   val slotWidth = if (xStep == 0f) 40f else xStep * 0.8f
   val barWidth = max(6f, slotWidth / max(1, seriesCount))
 
-  positions.forEach { offset ->
-    val left = offset.x - (slotWidth / 2f) + (seriesIndex * barWidth)
+  positions.forEach { point ->
+    val left = point.offset.x - (slotWidth / 2f) + (seriesIndex * barWidth)
     drawRect(
-      color = color,
-      topLeft = Offset(left, offset.y),
-      size = Size(barWidth, canvasHeight - offset.y)
+      color = color.copy(alpha = pointAlpha(selectedXIndex, point.xIndex)),
+      topLeft = Offset(left, point.offset.y),
+      size = Size(barWidth, canvasHeight - point.offset.y)
     )
   }
 }
 
 private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAreaSeries(
-  positions: List<Offset>,
+  positions: List<PlotPoint>,
   color: Color,
   lineWidth: Float,
-  canvasHeight: Float
+  canvasHeight: Float,
+  selectedXIndex: Int?
 ) {
   if (positions.isEmpty()) return
 
   if (positions.size == 1) {
-    drawCircle(color = color, radius = 5f, center = positions.first())
+    val alpha = pointAlpha(selectedXIndex, positions.first().xIndex)
+    drawCircle(color = color.copy(alpha = alpha), radius = 5f, center = positions.first().offset)
     return
   }
 
   val path = Path().apply {
-    moveTo(positions.first().x, canvasHeight)
-    positions.forEach { point -> lineTo(point.x, point.y) }
-    lineTo(positions.last().x, canvasHeight)
+    moveTo(positions.first().offset.x, canvasHeight)
+    positions.forEach { point -> lineTo(point.offset.x, point.offset.y) }
+    lineTo(positions.last().offset.x, canvasHeight)
     close()
   }
 
-  drawPath(path = path, color = color.copy(alpha = 0.20f), style = Fill)
+  val lineAlpha = if (selectedXIndex == null) 1f else 0.6f
+  drawPath(path = path, color = color.copy(alpha = 0.20f * lineAlpha), style = Fill)
   positions.zipWithNext { left, right ->
-    drawLine(color = color, start = left, end = right, strokeWidth = lineWidth)
+    val alpha = min(pointAlpha(selectedXIndex, left.xIndex), pointAlpha(selectedXIndex, right.xIndex))
+    drawLine(
+      color = color.copy(alpha = alpha),
+      start = left.offset,
+      end = right.offset,
+      strokeWidth = lineWidth
+    )
+  }
+}
+
+private fun nearestIndex(x: Float, width: Float, count: Int): Int {
+  if (count <= 1 || width <= 0f) return 0
+  val step = width / (count - 1)
+  val raw = (x / step).roundToInt()
+  return raw.coerceIn(0, count - 1)
+}
+
+private fun pointAlpha(selectedXIndex: Int?, pointXIndex: Int): Float {
+  if (selectedXIndex == null) return 1f
+  return if (selectedXIndex == pointXIndex) 1f else 0.32f
+}
+
+private fun formatValue(spec: ChartSpec, value: Double): String {
+  val decimals = spec.formatting?.number?.maximumFractionDigits ?: 2
+  val pattern = "%.${decimals}f"
+  return if (spec.formatting?.currency?.code != null) {
+    "${spec.formatting.currency.code} ${String.format(Locale.US, pattern, value)}"
+  } else {
+    String.format(Locale.US, pattern, value)
   }
 }
 
 private data class Slice(val label: String, val value: Double, val color: Color)
+
+private data class PlotPoint(
+  val offset: Offset,
+  val xIndex: Int
+)
 
 private fun resolveSeriesColor(spec: ChartSpec, seriesField: String, defaultIndex: Int): Color {
   val styleColor = spec.visual.series

@@ -8,6 +8,8 @@ public struct ChartCNView: View {
     private let spec: ChartSpec
     private let rows: [ChartRow]
 
+    @State private var selectedXIndex: Int?
+
     public init(spec: ChartSpec, rows: [ChartRow]) {
         self.spec = spec
         self.rows = rows
@@ -24,6 +26,10 @@ public struct ChartCNView: View {
                 chartBody
                     .frame(minHeight: 220)
 
+                if selectionEnabled, let _ = selectedXIndex, !selectedPoints.isEmpty {
+                    selectionSummaryView
+                }
+
                 if shouldShowLegend {
                     legendView
                 }
@@ -31,6 +37,12 @@ public struct ChartCNView: View {
                 if isCartesianChart, !xAxisLabels.isEmpty {
                     axisLabelRow
                 }
+            }
+        }
+        .onChange(of: xAxisLabels.count) { count in
+            guard let selectedXIndex else { return }
+            if selectedXIndex >= count {
+                self.selectedXIndex = nil
             }
         }
         .accessibilityElement(children: .contain)
@@ -75,8 +87,20 @@ public struct ChartCNView: View {
         ChartDataPipeline.points(from: spec, rows: rows)
     }
 
+    private var cartesianPoints: [ChartPoint] {
+        ChartDataPipeline.optimizeForViewport(
+            points: points,
+            chartType: spec.visual.chartType,
+            seriesOrder: spec.visual.series.map(\.field)
+        )
+    }
+
     private var seriesByField: [String: ChartSpec.VisualConfig.Series] {
         Dictionary(uniqueKeysWithValues: spec.visual.series.map { ($0.field, $0) })
+    }
+
+    private var seriesOrder: [String: Int] {
+        Dictionary(uniqueKeysWithValues: spec.visual.series.enumerated().map { ($0.element.field, $0.offset) })
     }
 
     private var seriesColors: [String: Color] {
@@ -94,19 +118,44 @@ public struct ChartCNView: View {
         }
     }
 
+    private var selectionEnabled: Bool {
+        guard isCartesianChart else { return false }
+        if spec.visual.tooltip?.enabled == false {
+            return false
+        }
+        return spec.interactions?.selection != "none"
+    }
+
     private var xAxisLabels: [String] {
-        guard !points.isEmpty else {
+        guard !cartesianPoints.isEmpty else {
             return []
         }
 
-        let maxIndex = points.map(\.xIndex).max() ?? 0
+        let maxIndex = cartesianPoints.map(\.xIndex).max() ?? 0
         var labels = Array(repeating: "", count: maxIndex + 1)
 
-        for point in points where labels[point.xIndex].isEmpty {
+        for point in cartesianPoints where labels[point.xIndex].isEmpty {
             labels[point.xIndex] = point.xLabel
         }
 
         return labels
+    }
+
+    private var selectedPoints: [ChartPoint] {
+        guard let selectedXIndex else {
+            return []
+        }
+
+        return cartesianPoints
+            .filter { $0.xIndex == selectedXIndex }
+            .sorted { left, right in
+                let lRank = seriesOrder[left.seriesField] ?? Int.max
+                let rRank = seriesOrder[right.seriesField] ?? Int.max
+                if lRank != rRank {
+                    return lRank < rRank
+                }
+                return left.seriesField < right.seriesField
+            }
     }
 
     private var lineInterpolation: InterpolationMethod {
@@ -125,97 +174,117 @@ public struct ChartCNView: View {
     }
 
     private var lineChart: some View {
-        Chart(points) { point in
-            LineMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
-            .lineStyle(
-                .init(
-                    lineWidth: lineWidth(forSeriesField: point.seriesField),
-                    dash: lineDash(forSeriesField: point.seriesField)
-                )
-            )
-            .interpolationMethod(lineInterpolation)
-
-            PointMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
-            .symbolSize(symbolSize)
-        }
-    }
-
-    private var barChart: some View {
-        Chart(points) { point in
-            BarMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(seriesColor(forSeriesField: point.seriesField).opacity(opacity(forSeriesField: point.seriesField)))
-        }
-    }
-
-    private var areaChart: some View {
-        Chart(points) { point in
-            let color = seriesColor(forSeriesField: point.seriesField)
-            let opacity = opacity(forSeriesField: point.seriesField)
-
-            AreaMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(color.opacity(0.20 * opacity))
-
-            LineMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(color.opacity(opacity))
-            .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
-            .interpolationMethod(lineInterpolation)
-        }
-    }
-
-    private var scatterChart: some View {
-        Chart(points) { point in
-            PointMark(
-                x: .value("X", point.xLabel),
-                y: .value("Y", point.yValue)
-            )
-            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
-            .symbolSize(symbolSize + 4)
-        }
-    }
-
-    private var comboChart: some View {
-        Chart(points) { point in
-            let renderer = seriesByField[point.seriesField]?.renderer
-            let color = seriesColor(forSeriesField: point.seriesField)
-
-            if renderer == "bar" {
-                BarMark(
-                    x: .value("X", point.xLabel),
-                    y: .value("Y", point.yValue)
-                )
-                .foregroundStyle(color.opacity(opacity(forSeriesField: point.seriesField)))
-            } else {
+        cartesianChart {
+            Chart(cartesianPoints) { point in
                 LineMark(
                     x: .value("X", point.xLabel),
                     y: .value("Y", point.yValue)
                 )
-                .foregroundStyle(color)
-                .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+                .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
+                .lineStyle(
+                    .init(
+                        lineWidth: lineWidth(forSeriesField: point.seriesField),
+                        dash: lineDash(forSeriesField: point.seriesField)
+                    )
+                )
                 .interpolationMethod(lineInterpolation)
+                .opacity(markOpacity(forXIndex: point.xIndex))
 
                 PointMark(
                     x: .value("X", point.xLabel),
                     y: .value("Y", point.yValue)
                 )
-                .foregroundStyle(color)
+                .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
                 .symbolSize(symbolSize)
+                .opacity(markOpacity(forXIndex: point.xIndex))
+            }
+        }
+    }
+
+    private var barChart: some View {
+        cartesianChart {
+            Chart(cartesianPoints) { point in
+                BarMark(
+                    x: .value("X", point.xLabel),
+                    y: .value("Y", point.yValue)
+                )
+                .foregroundStyle(seriesColor(forSeriesField: point.seriesField).opacity(opacity(forSeriesField: point.seriesField)))
+                .opacity(markOpacity(forXIndex: point.xIndex))
+            }
+        }
+    }
+
+    private var areaChart: some View {
+        cartesianChart {
+            Chart(cartesianPoints) { point in
+                let color = seriesColor(forSeriesField: point.seriesField)
+                let pointOpacity = markOpacity(forXIndex: point.xIndex)
+                let fillOpacity = (0.20 * opacity(forSeriesField: point.seriesField)) * pointOpacity
+
+                AreaMark(
+                    x: .value("X", point.xLabel),
+                    y: .value("Y", point.yValue)
+                )
+                .foregroundStyle(color.opacity(fillOpacity))
+
+                LineMark(
+                    x: .value("X", point.xLabel),
+                    y: .value("Y", point.yValue)
+                )
+                .foregroundStyle(color.opacity(opacity(forSeriesField: point.seriesField)))
+                .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+                .interpolationMethod(lineInterpolation)
+                .opacity(pointOpacity)
+            }
+        }
+    }
+
+    private var scatterChart: some View {
+        cartesianChart {
+            Chart(cartesianPoints) { point in
+                PointMark(
+                    x: .value("X", point.xLabel),
+                    y: .value("Y", point.yValue)
+                )
+                .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
+                .symbolSize(symbolSize + 4)
+                .opacity(markOpacity(forXIndex: point.xIndex))
+            }
+        }
+    }
+
+    private var comboChart: some View {
+        cartesianChart {
+            Chart(cartesianPoints) { point in
+                let renderer = seriesByField[point.seriesField]?.renderer
+                let color = seriesColor(forSeriesField: point.seriesField)
+                let pointOpacity = markOpacity(forXIndex: point.xIndex)
+
+                if renderer == "bar" {
+                    BarMark(
+                        x: .value("X", point.xLabel),
+                        y: .value("Y", point.yValue)
+                    )
+                    .foregroundStyle(color.opacity(opacity(forSeriesField: point.seriesField)))
+                    .opacity(pointOpacity)
+                } else {
+                    LineMark(
+                        x: .value("X", point.xLabel),
+                        y: .value("Y", point.yValue)
+                    )
+                    .foregroundStyle(color)
+                    .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+                    .interpolationMethod(lineInterpolation)
+                    .opacity(pointOpacity)
+
+                    PointMark(
+                        x: .value("X", point.xLabel),
+                        y: .value("Y", point.yValue)
+                    )
+                    .foregroundStyle(color)
+                    .symbolSize(symbolSize)
+                    .opacity(pointOpacity)
+                }
             }
         }
     }
@@ -305,6 +374,35 @@ public struct ChartCNView: View {
         }
     }
 
+    @ViewBuilder
+    private var selectionSummaryView: some View {
+        if let selectedXIndex {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(xAxisLabels[safe: selectedXIndex] ?? "")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ForEach(selectedPoints, id: \.id) { point in
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(seriesColor(forSeriesField: point.seriesField))
+                            .frame(width: 7, height: 7)
+                        Text(point.seriesLabel)
+                            .font(.caption)
+                        Spacer(minLength: 8)
+                        Text(formatted(point.yValue))
+                            .font(.caption.monospacedDigit())
+                    }
+                }
+            }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.secondary.opacity(0.14))
+            )
+        }
+    }
+
     private var axisLabelRow: some View {
         let first = xAxisLabels.first ?? ""
         let middle = xAxisLabels[safe: xAxisLabels.count / 2] ?? ""
@@ -337,6 +435,96 @@ public struct ChartCNView: View {
             Text(label)
                 .font(.caption)
         }
+    }
+
+    private func cartesianChart<Content: View>(
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        content()
+            .chartOverlay { proxy in
+                GeometryReader { geometry in
+                    Rectangle()
+                        .fill(.clear)
+                        .contentShape(Rectangle())
+                        .gesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    updateSelection(at: value.location, proxy: proxy, geometry: geometry)
+                                }
+                                .onEnded { _ in
+                                    selectedXIndex = nil
+                                }
+                        )
+                        .overlay(alignment: .topLeading) {
+                            if selectionEnabled,
+                               let crosshairX = crosshairXPosition(proxy: proxy, geometry: geometry) {
+                                Path { path in
+                                    let plotFrame = geometry[proxy.plotAreaFrame]
+                                    path.move(to: CGPoint(x: crosshairX, y: plotFrame.minY))
+                                    path.addLine(to: CGPoint(x: crosshairX, y: plotFrame.maxY))
+                                }
+                                .stroke(Color.secondary.opacity(0.65), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                            }
+                        }
+                }
+            }
+    }
+
+    private func updateSelection(
+        at location: CGPoint,
+        proxy: ChartProxy,
+        geometry: GeometryProxy
+    ) {
+        guard selectionEnabled, !xAxisLabels.isEmpty else {
+            selectedXIndex = nil
+            return
+        }
+
+        let plotFrame = geometry[proxy.plotAreaFrame]
+        guard plotFrame.contains(location) else {
+            selectedXIndex = nil
+            return
+        }
+
+        let localX = location.x - plotFrame.minX
+        selectedXIndex = nearestIndex(
+            localX: localX,
+            plotWidth: plotFrame.width,
+            pointCount: xAxisLabels.count
+        )
+    }
+
+    private func crosshairXPosition(proxy: ChartProxy, geometry: GeometryProxy) -> CGFloat? {
+        guard selectionEnabled,
+              let selectedXIndex,
+              !xAxisLabels.isEmpty else {
+            return nil
+        }
+
+        let plotFrame = geometry[proxy.plotAreaFrame]
+        if xAxisLabels.count <= 1 {
+            return plotFrame.midX
+        }
+
+        let step = plotFrame.width / CGFloat(max(1, xAxisLabels.count - 1))
+        return plotFrame.minX + CGFloat(selectedXIndex) * step
+    }
+
+    private func nearestIndex(localX: CGFloat, plotWidth: CGFloat, pointCount: Int) -> Int {
+        guard pointCount > 1, plotWidth > 0 else {
+            return 0
+        }
+
+        let step = plotWidth / CGFloat(pointCount - 1)
+        let raw = Int((localX / step).rounded())
+        return min(max(0, raw), pointCount - 1)
+    }
+
+    private func markOpacity(forXIndex xIndex: Int) -> Double {
+        guard let selectedXIndex, selectionEnabled else {
+            return 1
+        }
+        return selectedXIndex == xIndex ? 1 : 0.32
     }
 
     private func formatted(_ value: Double?) -> String {

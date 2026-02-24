@@ -12,6 +12,8 @@ A reusable chart system for mobile apps, inspired by the DX of shadcn/ui.
 - data adapters (SwiftData, Room, SQLDelight, API)
 - shared theming tokens
 - accessibility defaults
+- chart interaction defaults (selection + tooltip summaries)
+- viewport performance guardrails (windowing + downsampling)
 - reusable chart recipes
 
 ## Why
