@@ -1,0 +1,8 @@
+{
+  "extends": "../../packages/spec/examples/starter/trend-line.chart.json",
+  "registryMetadata": {
+    "name": "Starter Trend Line",
+    "category": "starter",
+    "recommendedFor": ["growth-dashboard", "daily-monitoring"]
+  }
+}

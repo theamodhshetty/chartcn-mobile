@@ -1,0 +1,8 @@
+{
+  "extends": "../../packages/spec/examples/starter/kpi-card.chart.json",
+  "registryMetadata": {
+    "name": "Starter KPI Card",
+    "category": "starter",
+    "recommendedFor": ["executive-dashboard", "headline-metric"]
+  }
+}

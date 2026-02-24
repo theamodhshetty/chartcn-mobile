@@ -20,6 +20,11 @@ A reusable chart system for mobile apps, inspired by the DX of shadcn/ui.
 
 Teams repeatedly rebuild the same mobile chart surfaces: KPI cards, trend lines, segmented bars, and dashboard widgets. This project provides a consistent, open-source foundation for iOS and Android.
 
+## Exact User And Promise
+
+- User: mobile teams using SwiftUI + Compose dashboards.
+- Promise: Ship production charts from ChartSpec in under few minutes.
+
 ## Core Principles
 
 1. Adopt existing chart engines (`Swift Charts`, Compose chart libs) and add a thin reuse layer.
@@ -39,9 +44,20 @@ Teams repeatedly rebuild the same mobile chart surfaces: KPI cards, trend lines,
 ## Quick Start
 
 ```bash
-pnpm install
-pnpm build
+pnpm chartcn:init
 ```
+
+Runs directly from repo source. No separate install step for first run.
+
+No prompts. No flags. No first-run choices.
+
+Generated output:
+
+- `chartcn-starter/templates/kpi-card/chartspec.json` (one example spec)
+- `chartcn-starter/screenshots/chartcn-starter-preview.svg` (one screenshot output)
+- iOS + Android + sample data files for each starter template
+
+![chartcn starter preview](starter/screenshots/chartcn-starter-preview.svg)
 
 Install from npm (preferred, once `NPM_TOKEN` is configured and a publish runs):
 
@@ -61,13 +77,26 @@ Enable automated npm publish:
 gh secret set NPM_TOKEN --repo theamodhshetty/chartcn-mobile
 ```
 
+## Starter Templates (Only 3)
+
+1. `kpi-card`
+2. `trend-line`
+3. `comparison-bar`
+
+Each template includes:
+
+- `chartspec.json`
+- `sample-data.json`
+- `ios.swift`
+- `android.kt`
+
 ## Using It
 
-1. Pick a registry item from `registry/dashboards`.
+1. Pick a starter registry item from `registry/dashboards`.
 2. Resolve it to a concrete spec:
 
 ```bash
-pnpm spec:resolve registry/dashboards/kpi-revenue-trend.chart.json --output ./my-chart.json
+pnpm spec:resolve registry/dashboards/trend-line.chart.json --output ./my-chart.json
 ```
 
 3. Load the spec in your platform package:

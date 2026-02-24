@@ -1,0 +1,6 @@
+[
+  { "segment": "Organic", "conversion_rate": 41.2 },
+  { "segment": "Paid", "conversion_rate": 33.9 },
+  { "segment": "Referral", "conversion_rate": 48.7 },
+  { "segment": "Email", "conversion_rate": 44.6 }
+]

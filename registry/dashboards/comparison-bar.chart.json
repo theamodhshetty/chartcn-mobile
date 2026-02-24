@@ -1,0 +1,8 @@
+{
+  "extends": "../../packages/spec/examples/starter/comparison-bar.chart.json",
+  "registryMetadata": {
+    "name": "Starter Comparison Bar",
+    "category": "starter",
+    "recommendedFor": ["acquisition-dashboard", "channel-performance"]
+  }
+}

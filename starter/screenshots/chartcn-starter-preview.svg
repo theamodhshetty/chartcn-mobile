@@ -1,0 +1,63 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">chartcn starter preview</title>
+  <desc id="desc">Preview screenshot with KPI card, trend line chart, and comparison bar chart.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F8FAFC"/>
+      <stop offset="100%" stop-color="#EEF2FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+
+  <text x="56" y="72" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="34" font-weight="700" fill="#0F172A">
+    chartcn starter
+  </text>
+  <text x="56" y="108" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="20" fill="#334155">
+    KPI card + trend line + comparison bar
+  </text>
+
+  <g transform="translate(56,148)">
+    <rect width="340" height="500" rx="18" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="26" y="44" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="18" font-weight="600" fill="#0F172A">
+      KPI Card
+    </text>
+    <text x="26" y="88" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="14" fill="#64748B">
+      Monthly Recurring Revenue
+    </text>
+    <text x="26" y="158" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="52" font-weight="700" fill="#1D4ED8">
+      $138.9K
+    </text>
+    <text x="26" y="202" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="15" fill="#059669">
+      +5.2% vs previous period
+    </text>
+  </g>
+
+  <g transform="translate(430,148)">
+    <rect width="340" height="500" rx="18" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="26" y="44" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="18" font-weight="600" fill="#0F172A">
+      Trend Line
+    </text>
+    <line x1="26" y1="420" x2="314" y2="420" stroke="#CBD5E1"/>
+    <line x1="26" y1="96" x2="26" y2="420" stroke="#CBD5E1"/>
+    <polyline fill="none" stroke="#06B6D4" stroke-width="5"
+      points="40,360 88,338 136,324 184,298 232,270 280,246"/>
+    <circle cx="40" cy="360" r="5" fill="#06B6D4"/>
+    <circle cx="88" cy="338" r="5" fill="#06B6D4"/>
+    <circle cx="136" cy="324" r="5" fill="#06B6D4"/>
+    <circle cx="184" cy="298" r="5" fill="#06B6D4"/>
+    <circle cx="232" cy="270" r="5" fill="#06B6D4"/>
+    <circle cx="280" cy="246" r="5" fill="#06B6D4"/>
+  </g>
+
+  <g transform="translate(804,148)">
+    <rect width="340" height="500" rx="18" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="26" y="44" font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto" font-size="18" font-weight="600" fill="#0F172A">
+      Comparison Bar
+    </text>
+    <line x1="26" y1="420" x2="314" y2="420" stroke="#CBD5E1"/>
+    <rect x="48" y="284" width="44" height="136" fill="#F97316" rx="6"/>
+    <rect x="114" y="318" width="44" height="102" fill="#FB923C" rx="6"/>
+    <rect x="180" y="254" width="44" height="166" fill="#EA580C" rx="6"/>
+    <rect x="246" y="270" width="44" height="150" fill="#FDBA74" rx="6"/>
+  </g>
+</svg>

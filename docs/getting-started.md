@@ -1,28 +1,36 @@
 # Getting Started
 
-## Prerequisites
+## Exact User + Promise
 
-- Node 20+
-- pnpm 9+
-- Xcode 15+ (for iOS package tests)
-- Android Studio + JDK 17 (for Android package development)
+- User: mobile teams using SwiftUI + Compose dashboards.
+- Promise: Ship production charts from ChartSpec in under few minutes.
 
-## 1. Install and validate
+## One-Command Init
 
 ```bash
-pnpm install
-pnpm build
+pnpm chartcn:init
 ```
 
-## 2. Pick a chart recipe
+Runs directly from repo source. No separate install step for first run.
 
-Example:
+No prompts. No flags. No first-run choices.
+
+This generates:
+
+- one example spec: `chartcn-starter/templates/kpi-card/chartspec.json`
+- one screenshot output: `chartcn-starter/screenshots/chartcn-starter-preview.svg`
+- only 3 templates, each with iOS + Android + sample data:
+  - `kpi-card`
+  - `trend-line`
+  - `comparison-bar`
+
+## Resolve A Template To A Concrete Spec
 
 ```bash
-pnpm spec:resolve registry/dashboards/kpi-revenue-trend.chart.json --output ./revenue.chart.json
+pnpm spec:resolve registry/dashboards/trend-line.chart.json --output ./my-chart.json
 ```
 
-## 3. iOS integration
+## iOS Integration
 
 ```swift
 let spec = try ChartSpecLoader.load(from: data)
@@ -30,9 +38,7 @@ let rows: [ChartRow] = ...
 let view = ChartCNView(spec: spec, rows: rows)
 ```
 
-For SwiftData-backed rows, use `SwiftDataAdapter` with a `ChartSwiftDataMappable` model.
-
-## 4. Android integration
+## Android Integration
 
 ```kotlin
 val spec = ChartSpecParser.parse(rawSpec)
@@ -40,30 +46,22 @@ val rows: List<ChartRow> = ...
 ChartCNView(spec = spec, rows = rows)
 ```
 
-For Room-backed rows, use `RoomAdapter.fetchRows(...)`.
+## Install Spec Package In Another Project
 
-## 5. Install spec package in another project
-
-From npm (after publish):
+From npm:
 
 ```bash
 npm install @chartcn/spec
 ```
 
-From release artifact:
+From release artifact (if needed):
 
 ```bash
 npm install https://github.com/theamodhshetty/chartcn-mobile/releases/latest/download/chartcn-spec-latest.tgz
 ```
 
-## 6. Spec lifecycle operations
+## Spec Lifecycle Ops
 
 - Validate: `pnpm spec:validate <file>`
 - Migrate: `pnpm spec:migrate <file> --in-place`
 - Compat: `pnpm spec:compat <baseline> <candidate>`
-
-## 7. CI expectations
-
-- Spec/type checks run on Ubuntu
-- Swift tests run on macOS
-- Android tests run on Ubuntu with Gradle

@@ -1,0 +1,71 @@
+{
+  "specVersion": "1.1.0",
+  "id": "starter.trend.line.v1",
+  "metadata": {
+    "name": "Starter Trend Line",
+    "description": "Daily active users trend line with lightweight interaction.",
+    "tags": ["starter", "trend", "line"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-02-24"
+  },
+  "data": {
+    "source": {
+      "adapter": "static",
+      "rows": [
+        { "day": "2026-02-18", "active_users": 1120 },
+        { "day": "2026-02-19", "active_users": 1195 },
+        { "day": "2026-02-20", "active_users": 1230 },
+        { "day": "2026-02-21", "active_users": 1278 },
+        { "day": "2026-02-22", "active_users": 1326 },
+        { "day": "2026-02-23", "active_users": 1368 },
+        { "day": "2026-02-24", "active_users": 1412 }
+      ]
+    },
+    "dimensions": [
+      { "key": "day", "type": "time", "label": "Day" }
+    ],
+    "measures": [
+      { "key": "active_users", "type": "number", "label": "Active Users" }
+    ]
+  },
+  "visual": {
+    "chartType": "line",
+    "xField": "day",
+    "series": [
+      {
+        "field": "active_users",
+        "label": "Active Users",
+        "renderer": "line",
+        "style": { "color": "token.chart.primary", "lineWidth": 3 }
+      }
+    ],
+    "axes": {
+      "x": { "label": "Day" },
+      "y": { "label": "Users" }
+    },
+    "tooltip": { "enabled": true, "mode": "nearest" }
+  },
+  "formatting": {
+    "number": { "notation": "compact", "maximumFractionDigits": 1 }
+  },
+  "interactions": {
+    "selection": "single",
+    "gestures": ["tap", "pan"]
+  },
+  "theming": {
+    "palette": "starter-default",
+    "tokens": {
+      "token.chart.primary": "#06B6D4"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Daily active users trend line chart",
+    "summaryTemplate": "Active users trend has latest value {latestValue}.",
+    "announceOnLoad": true
+  },
+  "platformOverrides": {
+    "ios": { "interpolation": "monotone", "symbolSize": 4 },
+    "android": { "curveStyle": "smooth", "pointRadius": 3 }
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "specVersion": "1.1.0",
+  "id": "starter.comparison.bar.v1",
+  "metadata": {
+    "name": "Starter Comparison Bar",
+    "description": "Category comparison bar chart for conversion performance.",
+    "tags": ["starter", "comparison", "bar"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-02-24"
+  },
+  "data": {
+    "source": {
+      "adapter": "static",
+      "rows": [
+        { "segment": "Organic", "conversion_rate": 41.2 },
+        { "segment": "Paid", "conversion_rate": 33.9 },
+        { "segment": "Referral", "conversion_rate": 48.7 },
+        { "segment": "Email", "conversion_rate": 44.6 }
+      ]
+    },
+    "dimensions": [
+      { "key": "segment", "type": "string", "label": "Segment" }
+    ],
+    "measures": [
+      { "key": "conversion_rate", "type": "percent", "label": "Conversion Rate", "unit": "%" }
+    ]
+  },
+  "visual": {
+    "chartType": "bar",
+    "xField": "segment",
+    "series": [
+      {
+        "field": "conversion_rate",
+        "label": "Conversion %",
+        "renderer": "bar",
+        "style": { "color": "token.chart.primary", "opacity": 0.9 }
+      }
+    ],
+    "axes": {
+      "x": { "label": "Segment" },
+      "y": { "label": "Conversion %", "min": 0, "max": 100 }
+    },
+    "tooltip": { "enabled": true, "mode": "nearest" }
+  },
+  "formatting": {
+    "number": { "maximumFractionDigits": 1 }
+  },
+  "interactions": {
+    "selection": "single",
+    "gestures": ["tap"]
+  },
+  "theming": {
+    "palette": "starter-default",
+    "tokens": {
+      "token.chart.primary": "#F97316"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Segment conversion comparison chart",
+    "summaryTemplate": "Top segment conversion is {maxSegmentValue} percent.",
+    "announceOnLoad": true
+  }
+}

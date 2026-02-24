@@ -1,8 +1,0 @@
-{
-  "extends": "../../packages/spec/examples/medication-adherence.chart.json",
-  "registryMetadata": {
-    "name": "Weekly Adherence Bar",
-    "category": "health",
-    "recommendedFor": ["patient-overview", "care-manager"]
-  }
-}

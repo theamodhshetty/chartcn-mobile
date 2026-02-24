@@ -1,8 +1,0 @@
-{
-  "extends": "../../packages/spec/examples/revenue-trend.migrated.json",
-  "registryMetadata": {
-    "name": "KPI Revenue Trend Card",
-    "category": "business",
-    "recommendedFor": ["dashboard", "executive-summary"]
-  }
-}

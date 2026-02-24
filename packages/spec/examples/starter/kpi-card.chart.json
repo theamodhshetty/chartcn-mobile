@@ -1,0 +1,62 @@
+{
+  "specVersion": "1.1.0",
+  "id": "starter.kpi.card.v1",
+  "metadata": {
+    "name": "Starter KPI Card",
+    "description": "Single-value KPI card for executive dashboards.",
+    "tags": ["starter", "kpi"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-02-24"
+  },
+  "data": {
+    "source": {
+      "adapter": "static",
+      "rows": [
+        { "metric": "MRR", "value": 128400 },
+        { "metric": "MRR", "value": 132100 },
+        { "metric": "MRR", "value": 138900 }
+      ]
+    },
+    "dimensions": [
+      { "key": "metric", "type": "string", "label": "Metric" }
+    ],
+    "measures": [
+      { "key": "value", "type": "currency", "label": "Value", "currency": "USD" }
+    ]
+  },
+  "visual": {
+    "chartType": "kpi",
+    "series": [
+      {
+        "field": "value",
+        "label": "Monthly Recurring Revenue",
+        "renderer": "kpi",
+        "style": { "color": "token.chart.primary" }
+      }
+    ],
+    "emptyState": {
+      "title": "No KPI data",
+      "description": "Add at least one row with a numeric value field."
+    }
+  },
+  "formatting": {
+    "currency": { "code": "USD", "display": "symbol" },
+    "number": { "maximumFractionDigits": 0 }
+  },
+  "interactions": {
+    "selection": "none",
+    "gestures": ["tap"]
+  },
+  "theming": {
+    "palette": "starter-default",
+    "tokens": {
+      "token.chart.primary": "#1D4ED8"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Monthly recurring revenue KPI card",
+    "summaryTemplate": "Latest monthly recurring revenue value is {latestValue}.",
+    "announceOnLoad": true
+  }
+}
