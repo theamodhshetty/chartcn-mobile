@@ -38,6 +38,7 @@ final class ChartDataPipelineTests: XCTestCase {
         let points = ChartDataPipeline.points(from: spec, rows: rows)
 
         XCTAssertEqual(points.count, 2)
+        XCTAssertEqual(points.first?.xIndex, 0)
         XCTAssertEqual(points.first?.xLabel, "2026-01-01")
         XCTAssertEqual(points.first?.yValue, 1200)
     }

@@ -42,6 +42,7 @@ class ChartDataPipelineTest {
     val points = ChartDataPipeline.points(spec, rows)
 
     assertEquals(2, points.size)
+    assertEquals(0, points.first().xIndex)
     assertEquals("Mon", points.first().xLabel)
     assertEquals(10.0, points.first().yValue)
   }

@@ -19,23 +19,36 @@ public struct ChartCNView: View {
                 .font(.headline)
 
             if rows.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(spec.visual.emptyState?.title ?? "No Data")
-                        .font(.subheadline)
-                    if let description = spec.visual.emptyState?.description {
-                        Text(description)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
+                emptyStateView
             } else {
                 chartBody
                     .frame(minHeight: 220)
+
+                if shouldShowLegend {
+                    legendView
+                }
+
+                if isCartesianChart, !xAxisLabels.isEmpty {
+                    axisLabelRow
+                }
             }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(spec.accessibility.chartTitle))
         .accessibilityHint(Text(spec.accessibility.summaryTemplate))
+    }
+
+    @ViewBuilder
+    private var emptyStateView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(spec.visual.emptyState?.title ?? "No Data")
+                .font(.subheadline)
+            if let description = spec.visual.emptyState?.description {
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
     }
 
     @ViewBuilder
@@ -62,20 +75,76 @@ public struct ChartCNView: View {
         ChartDataPipeline.points(from: spec, rows: rows)
     }
 
+    private var seriesByField: [String: ChartSpec.VisualConfig.Series] {
+        Dictionary(uniqueKeysWithValues: spec.visual.series.map { ($0.field, $0) })
+    }
+
+    private var seriesColors: [String: Color] {
+        Dictionary(uniqueKeysWithValues: spec.visual.series.enumerated().map { index, series in
+            (series.field, resolvedSeriesColor(series, fallbackIndex: index))
+        })
+    }
+
+    private var isCartesianChart: Bool {
+        switch spec.visual.chartType {
+        case .line, .bar, .area, .scatter, .combo:
+            return true
+        case .pie, .donut, .kpi:
+            return false
+        }
+    }
+
+    private var xAxisLabels: [String] {
+        guard !points.isEmpty else {
+            return []
+        }
+
+        let maxIndex = points.map(\.xIndex).max() ?? 0
+        var labels = Array(repeating: "", count: maxIndex + 1)
+
+        for point in points where labels[point.xIndex].isEmpty {
+            labels[point.xIndex] = point.xLabel
+        }
+
+        return labels
+    }
+
+    private var lineInterpolation: InterpolationMethod {
+        switch spec.platformOverrides?.ios?.interpolation {
+        case "monotone":
+            return .monotone
+        case "catmullRom":
+            return .catmullRom
+        default:
+            return .linear
+        }
+    }
+
+    private var symbolSize: CGFloat {
+        CGFloat(spec.platformOverrides?.ios?.symbolSize ?? 22)
+    }
+
     private var lineChart: some View {
         Chart(points) { point in
             LineMark(
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField))
-            .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
+            .lineStyle(
+                .init(
+                    lineWidth: lineWidth(forSeriesField: point.seriesField),
+                    dash: lineDash(forSeriesField: point.seriesField)
+                )
+            )
+            .interpolationMethod(lineInterpolation)
 
             PointMark(
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField))
+            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
+            .symbolSize(symbolSize)
         }
     }
 
@@ -85,23 +154,28 @@ public struct ChartCNView: View {
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField))
+            .foregroundStyle(seriesColor(forSeriesField: point.seriesField).opacity(opacity(forSeriesField: point.seriesField)))
         }
     }
 
     private var areaChart: some View {
         Chart(points) { point in
+            let color = seriesColor(forSeriesField: point.seriesField)
+            let opacity = opacity(forSeriesField: point.seriesField)
+
             AreaMark(
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField).opacity(0.25))
+            .foregroundStyle(color.opacity(0.20 * opacity))
 
             LineMark(
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField))
+            .foregroundStyle(color.opacity(opacity))
+            .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+            .interpolationMethod(lineInterpolation)
         }
     }
 
@@ -111,38 +185,60 @@ public struct ChartCNView: View {
                 x: .value("X", point.xLabel),
                 y: .value("Y", point.yValue)
             )
-            .foregroundStyle(color(forSeriesField: point.seriesField))
+            .foregroundStyle(seriesColor(forSeriesField: point.seriesField))
+            .symbolSize(symbolSize + 4)
         }
     }
 
     private var comboChart: some View {
         Chart(points) { point in
-            if let renderer = spec.visual.series.first(where: { $0.field == point.seriesField })?.renderer,
-               renderer == "bar" {
+            let renderer = seriesByField[point.seriesField]?.renderer
+            let color = seriesColor(forSeriesField: point.seriesField)
+
+            if renderer == "bar" {
                 BarMark(
                     x: .value("X", point.xLabel),
                     y: .value("Y", point.yValue)
                 )
-                .foregroundStyle(color(forSeriesField: point.seriesField))
+                .foregroundStyle(color.opacity(opacity(forSeriesField: point.seriesField)))
             } else {
                 LineMark(
                     x: .value("X", point.xLabel),
                     y: .value("Y", point.yValue)
                 )
-                .foregroundStyle(color(forSeriesField: point.seriesField))
+                .foregroundStyle(color)
                 .lineStyle(.init(lineWidth: lineWidth(forSeriesField: point.seriesField)))
+                .interpolationMethod(lineInterpolation)
+
+                PointMark(
+                    x: .value("X", point.xLabel),
+                    y: .value("Y", point.yValue)
+                )
+                .foregroundStyle(color)
+                .symbolSize(symbolSize)
             }
         }
     }
 
     private func pieChart(innerRadiusRatio: Double) -> some View {
+        Chart(pieSlices) { slice in
+            SectorMark(
+                angle: .value("Value", max(slice.value, 0)),
+                innerRadius: .ratio(innerRadiusRatio)
+            )
+            .foregroundStyle(slice.color)
+        }
+    }
+
+    private var pieSlices: [PieSlice] {
         let firstSeries = spec.visual.series.first
         let dimensionKey = spec.data.dimensions.first?.key
 
-        let slices: [(label: String, value: Double, field: String)] = rows.compactMap { row in
+        return rows.enumerated().compactMap { index, row in
             guard
                 let seriesField = firstSeries?.field,
-                let value = row[seriesField]?.doubleValue
+                let value = row[seriesField]?.doubleValue,
+                value > 0
             else {
                 return nil
             }
@@ -151,21 +247,15 @@ public struct ChartCNView: View {
             if let dimensionKey, let dim = row[dimensionKey] {
                 label = dim.stringValue ?? ""
             } else {
-                label = firstSeries?.label ?? "Slice"
+                label = "Slice \(index + 1)"
             }
 
-            return (label, value, seriesField)
-        }
-
-        let enumeratedSlices = Array(slices.enumerated())
-
-        return Chart(enumeratedSlices, id: \.offset) { item in
-            let slice = item.element
-            SectorMark(
-                angle: .value("Value", max(slice.value, 0)),
-                innerRadius: .ratio(innerRadiusRatio)
+            return PieSlice(
+                id: "\(index)-\(label)",
+                label: label.isEmpty ? "Slice \(index + 1)" : label,
+                value: value,
+                color: defaultPalette(index)
             )
-            .foregroundStyle(color(forSeriesField: slice.field))
         }
     }
 
@@ -182,51 +272,151 @@ public struct ChartCNView: View {
         }
     }
 
+    private var shouldShowLegend: Bool {
+        if spec.visual.legend?.visible == false {
+            return false
+        }
+
+        switch spec.visual.chartType {
+        case .kpi:
+            return false
+        case .pie, .donut:
+            return !pieSlices.isEmpty
+        case .line, .bar, .area, .scatter, .combo:
+            return spec.visual.series.count > 1
+        }
+    }
+
+    @ViewBuilder
+    private var legendView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if spec.visual.chartType == .pie || spec.visual.chartType == .donut {
+                ForEach(pieSlices) { slice in
+                    legendItem(label: slice.label, color: slice.color)
+                }
+            } else {
+                ForEach(Array(spec.visual.series.enumerated()), id: \.offset) { index, series in
+                    legendItem(
+                        label: series.label,
+                        color: seriesColors[series.field] ?? defaultPalette(index)
+                    )
+                }
+            }
+        }
+    }
+
+    private var axisLabelRow: some View {
+        let first = xAxisLabels.first ?? ""
+        let middle = xAxisLabels[safe: xAxisLabels.count / 2] ?? ""
+        let last = xAxisLabels.last ?? ""
+
+        return HStack(spacing: 8) {
+            Text(first)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if xAxisLabels.count > 2 {
+                Text(middle)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
+
+            if xAxisLabels.count > 1 {
+                Text(last)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
+        .font(.caption2)
+        .foregroundStyle(.secondary)
+    }
+
+    @ViewBuilder
+    private func legendItem(label: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(label)
+                .font(.caption)
+        }
+    }
+
     private func formatted(_ value: Double?) -> String {
         guard let value else { return "--" }
 
+        let formatter = NumberFormatter()
+
         if let currencyCode = spec.formatting?.currency?.code {
-            let formatter = NumberFormatter()
             formatter.numberStyle = .currency
             formatter.currencyCode = currencyCode
-            if let maximumFractionDigits = spec.formatting?.number?.maximumFractionDigits {
-                formatter.maximumFractionDigits = maximumFractionDigits
-            }
-            return formatter.string(from: NSNumber(value: value)) ?? String(value)
+        } else {
+            formatter.numberStyle = .decimal
         }
 
-        return String(format: "%.2f", value)
+        if let maximumFractionDigits = spec.formatting?.number?.maximumFractionDigits {
+            formatter.maximumFractionDigits = maximumFractionDigits
+        }
+
+        return formatter.string(from: NSNumber(value: value)) ?? String(value)
     }
 
     private func lineWidth(forSeriesField field: String) -> CGFloat {
-        let width = spec.visual.series
-            .first(where: { $0.field == field })?
-            .style?
-            .lineWidth
-        return CGFloat(width ?? 2)
+        let width = seriesByField[field]?.style?.lineWidth
+        return CGFloat(width ?? 2.5)
     }
 
-    private func color(forSeriesField field: String) -> Color {
-        let raw = spec.visual.series
-            .first(where: { $0.field == field })?
-            .style?
-            .color
+    private func lineDash(forSeriesField field: String) -> [CGFloat] {
+        let raw = seriesByField[field]?.style?.dash ?? []
+        return raw.map { CGFloat($0) }
+    }
 
-        if let raw,
-           let resolved = resolveColor(raw) {
+    private func opacity(forSeriesField field: String) -> Double {
+        seriesByField[field]?.style?.opacity ?? 1
+    }
+
+    private func seriesColor(forSeriesField field: String) -> Color {
+        if let color = seriesColors[field] {
+            return color
+        }
+
+        let fallbackIndex = spec.visual.series.firstIndex(where: { $0.field == field }) ?? 0
+        return defaultPalette(fallbackIndex)
+    }
+
+    private func resolvedSeriesColor(_ series: ChartSpec.VisualConfig.Series, fallbackIndex: Int) -> Color {
+        guard let raw = series.style?.color else {
+            return defaultPalette(fallbackIndex)
+        }
+
+        if raw.hasPrefix("token."),
+           let tokenValue = spec.theming?.tokens?[raw],
+           let resolved = Color(hex: tokenValue) {
             return resolved
         }
 
-        return .blue
+        return Color(hex: raw) ?? defaultPalette(fallbackIndex)
     }
 
-    private func resolveColor(_ tokenOrHex: String) -> Color? {
-        if tokenOrHex.hasPrefix("token."),
-           let tokenValue = spec.theming?.tokens?[tokenOrHex] {
-            return Color(hex: tokenValue)
-        }
+    private func defaultPalette(_ index: Int) -> Color {
+        let palette: [Color] = [
+            Color(hex: "#1D4ED8") ?? .blue,
+            Color(hex: "#06B6D4") ?? .cyan,
+            Color(hex: "#F97316") ?? .orange,
+            Color(hex: "#059669") ?? .green,
+            Color(hex: "#8B5CF6") ?? .purple
+        ]
+        return palette[max(0, index) % palette.count]
+    }
+}
 
-        return Color(hex: tokenOrHex)
+private struct PieSlice: Identifiable {
+    let id: String
+    let label: String
+    let value: Double
+    let color: Color
+}
+
+private extension Collection {
+    subscript(safe index: Index) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }
 
