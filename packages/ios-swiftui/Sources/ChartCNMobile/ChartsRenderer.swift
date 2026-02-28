@@ -39,7 +39,8 @@ public struct ChartCNView: View {
                 }
             }
         }
-        .onChange(of: xAxisLabels.count) { count in
+        .onChange(of: xAxisLabels.count) {
+            let count = xAxisLabels.count
             guard let selectedXIndex else { return }
             if selectedXIndex >= count {
                 self.selectedXIndex = nil
@@ -459,7 +460,7 @@ public struct ChartCNView: View {
                             if selectionEnabled,
                                let crosshairX = crosshairXPosition(proxy: proxy, geometry: geometry) {
                                 Path { path in
-                                    let plotFrame = geometry[proxy.plotAreaFrame]
+                                    let plotFrame = resolvedPlotFrame(proxy: proxy, geometry: geometry)
                                     path.move(to: CGPoint(x: crosshairX, y: plotFrame.minY))
                                     path.addLine(to: CGPoint(x: crosshairX, y: plotFrame.maxY))
                                 }
@@ -480,8 +481,8 @@ public struct ChartCNView: View {
             return
         }
 
-        let plotFrame = geometry[proxy.plotAreaFrame]
-        guard plotFrame.contains(location) else {
+        let plotFrame = resolvedPlotFrame(proxy: proxy, geometry: geometry)
+        guard plotFrame != .zero, plotFrame.contains(location) else {
             selectedXIndex = nil
             return
         }
@@ -501,7 +502,10 @@ public struct ChartCNView: View {
             return nil
         }
 
-        let plotFrame = geometry[proxy.plotAreaFrame]
+        let plotFrame = resolvedPlotFrame(proxy: proxy, geometry: geometry)
+        guard plotFrame != .zero else {
+            return nil
+        }
         if xAxisLabels.count <= 1 {
             return plotFrame.midX
         }
@@ -518,6 +522,13 @@ public struct ChartCNView: View {
         let step = plotWidth / CGFloat(pointCount - 1)
         let raw = Int((localX / step).rounded())
         return min(max(0, raw), pointCount - 1)
+    }
+
+    private func resolvedPlotFrame(proxy: ChartProxy, geometry: GeometryProxy) -> CGRect {
+        guard let anchor = proxy.plotFrame else {
+            return .zero
+        }
+        return geometry[anchor]
     }
 
     private func markOpacity(forXIndex xIndex: Int) -> Double {

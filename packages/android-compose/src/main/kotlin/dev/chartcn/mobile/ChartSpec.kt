@@ -47,7 +47,7 @@ data class Source(
 
   val table: String? = null,
   val where: String? = null,
-  val args: List<JsonElement> = emptyList(),
+  val args: JsonElement? = null,
   val orderBy: List<OrderBy> = emptyList(),
 
   val queryName: String? = null,

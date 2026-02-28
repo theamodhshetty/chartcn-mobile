@@ -112,6 +112,19 @@ public enum ChartDataPipeline {
             return String(number)
         case .bool(let flag):
             return String(flag)
+        case .array(let values):
+            return values
+                .map(label(from:))
+                .filter { !$0.isEmpty }
+                .joined(separator: ", ")
+        case .object(let values):
+            if let preferredLabel = values["label"] {
+                return label(from: preferredLabel)
+            }
+            if let first = values.values.first {
+                return label(from: first)
+            }
+            return ""
         case .null:
             return ""
         }

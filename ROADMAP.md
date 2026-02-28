@@ -11,8 +11,9 @@
 ## v0.2
 
 1. Add combo chart support and annotations.
-2. Add SQLDelight adapter and API pagination helpers.
-3. Add performance benchmark harness (`pnpm spec:bench`). Done.
+2. Add SQLDelight adapter. Done (2026-02-28).
+3. Add API pagination helpers. Done (2026-02-28).
+4. Add performance benchmark harness (`pnpm spec:bench`). Done.
 
 ## v1.0
 

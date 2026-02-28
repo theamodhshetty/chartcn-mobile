@@ -23,6 +23,8 @@ public enum ChartValue: Codable, Sendable, Hashable {
     case string(String)
     case number(Double)
     case bool(Bool)
+    case array([ChartValue])
+    case object([String: ChartValue])
     case null
 
     public init(from decoder: Decoder) throws {
@@ -48,6 +50,16 @@ public enum ChartValue: Codable, Sendable, Hashable {
             return
         }
 
+        if let array = try? container.decode([ChartValue].self) {
+            self = .array(array)
+            return
+        }
+
+        if let object = try? container.decode([String: ChartValue].self) {
+            self = .object(object)
+            return
+        }
+
         throw DecodingError.typeMismatch(
             ChartValue.self,
             DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Unsupported ChartValue type")
@@ -64,6 +76,10 @@ public enum ChartValue: Codable, Sendable, Hashable {
             try container.encode(value)
         case .bool(let value):
             try container.encode(value)
+        case .array(let value):
+            try container.encode(value)
+        case .object(let value):
+            try container.encode(value)
         case .null:
             try container.encodeNil()
         }
@@ -76,6 +92,16 @@ public enum ChartValue: Codable, Sendable, Hashable {
 
     public var doubleValue: Double? {
         if case .number(let value) = self { return value }
+        return nil
+    }
+
+    public var arrayValue: [ChartValue]? {
+        if case .array(let value) = self { return value }
+        return nil
+    }
+
+    public var objectValue: [String: ChartValue]? {
+        if case .object(let value) = self { return value }
         return nil
     }
 }
@@ -120,7 +146,7 @@ public struct ChartSpec: Codable, Sendable {
 
         public let table: String?
         public let `where`: String?
-        public let args: [ChartValue]?
+        public let args: ChartValue?
         public let orderBy: [OrderBy]?
 
         public let queryName: String?
