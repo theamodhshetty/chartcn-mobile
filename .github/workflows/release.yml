@@ -98,7 +98,7 @@ jobs:
           cp "${LATEST_PACKAGE}" release-artifacts/chartcn-spec-latest.tgz
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: chartcn-mobile-${{ steps.version.outputs.version }}
           path: release-artifacts
