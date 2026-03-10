@@ -1,0 +1,63 @@
+{
+  "specVersion": "1.1.0",
+  "id": "example.android.channel.comparison.v1",
+  "metadata": {
+    "name": "Channel Conversion",
+    "description": "Conversion comparison by acquisition segment.",
+    "tags": ["example", "android", "room", "bar"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-03-10"
+  },
+  "data": {
+    "source": {
+      "adapter": "room",
+      "table": "channel_performance",
+      "orderBy": [
+        { "field": "segment", "direction": "asc" }
+      ],
+      "limit": 8
+    },
+    "dimensions": [
+      { "key": "segment", "type": "string", "label": "Channel" }
+    ],
+    "measures": [
+      { "key": "conversion_rate", "type": "percent", "label": "Conversion Rate", "unit": "%" }
+    ]
+  },
+  "visual": {
+    "chartType": "bar",
+    "xField": "segment",
+    "series": [
+      {
+        "field": "conversion_rate",
+        "label": "Conversion %",
+        "renderer": "bar",
+        "style": { "color": "token.chart.primary", "opacity": 0.92 }
+      }
+    ],
+    "axes": {
+      "x": { "label": "Channel" },
+      "y": { "label": "Conversion %", "min": 0, "max": 100 }
+    },
+    "tooltip": { "enabled": true, "mode": "nearest" }
+  },
+  "formatting": {
+    "number": { "maximumFractionDigits": 1 }
+  },
+  "interactions": {
+    "selection": "single",
+    "gestures": ["tap"]
+  },
+  "theming": {
+    "palette": "example-android",
+    "tokens": {
+      "token.chart.primary": "#F97316"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Channel conversion comparison",
+    "summaryTemplate": "Conversion comparison across acquisition channels.",
+    "announceOnLoad": true
+  }
+}

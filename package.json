@@ -7,6 +7,7 @@
   "packageManager": "pnpm@9.12.3",
   "scripts": {
     "spec:validate": "tsx packages/spec/src/validate.ts",
+    "spec:validate:examples": "tsx packages/spec/src/validate.ts examples/ios-swiftdata-dashboard/Charts examples/android-room-dashboard/src/main/assets/charts starter/templates/kpi-card/chartspec.json starter/templates/trend-line/chartspec.json starter/templates/comparison-bar/chartspec.json",
     "spec:validate:registry": "tsx packages/spec/src/validate-registry.ts",
     "spec:resolve": "tsx packages/spec/src/resolve-registry.ts",
     "spec:migrate": "tsx packages/spec/src/migrate.ts",
@@ -14,7 +15,7 @@
     "spec:bench": "tsx packages/spec/src/benchmark.ts",
     "chartcn:init": "node packages/spec/src/init.mjs",
     "spec:build": "pnpm --filter @chartcn/spec run build",
-    "spec:check": "pnpm spec:validate && pnpm spec:validate:registry",
+    "spec:check": "pnpm spec:validate && pnpm spec:validate:examples && pnpm spec:validate:registry",
     "typecheck": "tsc -p tsconfig.json",
     "build": "pnpm typecheck && pnpm spec:check && pnpm spec:build",
     "test": "pnpm spec:check"

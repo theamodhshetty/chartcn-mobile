@@ -1,0 +1,62 @@
+{
+  "specVersion": "1.1.0",
+  "id": "example.ios.revenue.kpi.v1",
+  "metadata": {
+    "name": "Monthly Revenue KPI",
+    "description": "Latest revenue value from SwiftData.",
+    "tags": ["example", "ios", "swiftdata", "kpi"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-03-10"
+  },
+  "data": {
+    "source": {
+      "adapter": "swiftdata",
+      "entity": "DailyRevenue",
+      "sort": [
+        { "field": "day", "direction": "asc" }
+      ],
+      "limit": 30
+    },
+    "dimensions": [
+      { "key": "day", "type": "time", "label": "Day" }
+    ],
+    "measures": [
+      { "key": "revenue", "type": "currency", "label": "Revenue", "currency": "USD" }
+    ]
+  },
+  "visual": {
+    "chartType": "kpi",
+    "series": [
+      {
+        "field": "revenue",
+        "label": "MRR",
+        "renderer": "kpi",
+        "style": { "color": "token.chart.primary" }
+      }
+    ],
+    "emptyState": {
+      "title": "No revenue data",
+      "description": "Seed or sync at least one DailyRevenue row."
+    }
+  },
+  "formatting": {
+    "currency": { "code": "USD", "display": "symbol" },
+    "number": { "maximumFractionDigits": 0 }
+  },
+  "interactions": {
+    "selection": "none",
+    "gestures": ["tap"]
+  },
+  "theming": {
+    "palette": "example-ios",
+    "tokens": {
+      "token.chart.primary": "#1D4ED8"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Latest monthly recurring revenue",
+    "summaryTemplate": "Latest revenue value for the current dashboard.",
+    "announceOnLoad": true
+  }
+}

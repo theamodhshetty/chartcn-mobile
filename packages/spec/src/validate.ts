@@ -19,8 +19,24 @@ function gatherJsonFiles(dir: string): string[] {
   return out;
 }
 
+function expandInput(input: string): string[] {
+  const resolved = path.resolve(input);
+  if (!fs.existsSync(resolved)) {
+    throw new Error(`Input does not exist: ${input}`);
+  }
+
+  const stats = fs.statSync(resolved);
+  if (stats.isDirectory()) {
+    return gatherJsonFiles(resolved);
+  }
+
+  return [resolved];
+}
+
 const inputs = process.argv.slice(2);
-const files = inputs.length > 0 ? inputs.map(p => path.resolve(p)) : gatherJsonFiles(defaultExamplesPath);
+const files = inputs.length > 0
+  ? inputs.flatMap(expandInput)
+  : gatherJsonFiles(defaultExamplesPath);
 
 if (files.length === 0) {
   console.error("No JSON files provided or found.");

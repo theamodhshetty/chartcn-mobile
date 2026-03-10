@@ -38,7 +38,7 @@ Teams repeatedly rebuild the same mobile chart surfaces: KPI cards, trend lines,
 - `packages/ios-swiftui`: iOS integration scaffold for SwiftUI + SwiftData.
 - `packages/android-compose`: Android integration scaffold for Compose + Room.
 - `registry`: reusable chart recipes.
-- `examples`: end-to-end demo app docs.
+- `examples`: end-to-end SwiftData and Room dashboard scaffolds.
 - `docs`: architecture, spec guide, and project management docs.
 
 ## Quick Start
@@ -106,6 +106,7 @@ pnpm spec:resolve registry/dashboards/trend-line.chart.json --output ./my-chart.
 ## Spec Tooling
 
 - `pnpm spec:validate`: schema + semantic checks on specs.
+- `pnpm spec:validate:examples`: validates starter and example specs under `examples/` and `starter/templates/`.
 - `pnpm spec:validate:registry`: validates registry entries and resolved source specs.
 - `pnpm spec:resolve -- <registry-item.json> --output <resolved.json>`: resolves registry entry to a concrete spec.
 - `pnpm spec:migrate -- <file.json> --in-place`: migrates spec to current runtime version.
@@ -115,7 +116,7 @@ pnpm spec:resolve registry/dashboards/trend-line.chart.json --output ./my-chart.
 
 ## Status
 
-Active MVP implementation.
+`v0.2` implementation is complete. Current work should bias toward `v1.0` hardening: registry stability, compatibility guarantees, and production-ready examples/docs.
 
 See:
 - `ROADMAP.md` for milestones.

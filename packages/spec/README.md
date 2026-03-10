@@ -30,6 +30,7 @@ npm install https://github.com/theamodhshetty/chartcn-mobile/releases/latest/dow
 ## Root Scripts
 
 - `pnpm spec:validate`
+- `pnpm spec:validate:examples`
 - `pnpm spec:validate:registry`
 - `pnpm spec:migrate -- <input.json> [--in-place] [--target 1.1.0]`
 - `pnpm spec:compat -- <baseline.json> <candidate.json>`

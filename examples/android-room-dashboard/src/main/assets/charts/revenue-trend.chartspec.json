@@ -1,0 +1,71 @@
+{
+  "specVersion": "1.1.0",
+  "id": "example.android.revenue.trend.v1",
+  "metadata": {
+    "name": "Revenue Trend",
+    "description": "Fourteen-day revenue trend loaded from Room.",
+    "tags": ["example", "android", "room", "trend"],
+    "status": "stable",
+    "owners": ["chartcn-core"],
+    "updatedAt": "2026-03-10"
+  },
+  "data": {
+    "source": {
+      "adapter": "room",
+      "table": "daily_revenue",
+      "where": "day >= ?",
+      "args": ["2026-02-10"],
+      "orderBy": [
+        { "field": "day", "direction": "asc" }
+      ],
+      "limit": 30
+    },
+    "dimensions": [
+      { "key": "day", "type": "time", "label": "Day" }
+    ],
+    "measures": [
+      { "key": "revenue", "type": "currency", "label": "Revenue", "currency": "USD" }
+    ]
+  },
+  "visual": {
+    "chartType": "line",
+    "xField": "day",
+    "series": [
+      {
+        "field": "revenue",
+        "label": "Revenue",
+        "renderer": "line",
+        "style": { "color": "token.chart.primary", "lineWidth": 3 }
+      }
+    ],
+    "legend": { "visible": false },
+    "axes": {
+      "x": { "label": "Day" },
+      "y": { "label": "Revenue" }
+    },
+    "tooltip": { "enabled": true, "mode": "nearest" }
+  },
+  "formatting": {
+    "currency": { "code": "USD", "display": "symbol" },
+    "number": { "notation": "compact", "maximumFractionDigits": 1 },
+    "date": { "granularity": "day" }
+  },
+  "interactions": {
+    "selection": "single",
+    "gestures": ["tap", "pan"]
+  },
+  "theming": {
+    "palette": "example-android",
+    "tokens": {
+      "token.chart.primary": "#0284C7"
+    }
+  },
+  "accessibility": {
+    "chartTitle": "Fourteen-day revenue trend",
+    "summaryTemplate": "Revenue trend for the last fourteen days.",
+    "announceOnLoad": true
+  },
+  "platformOverrides": {
+    "android": { "curveStyle": "smooth", "pointRadius": 4 }
+  }
+}

@@ -30,6 +30,13 @@ This generates:
 pnpm spec:resolve registry/dashboards/trend-line.chart.json --output ./my-chart.json
 ```
 
+## Example Dashboards
+
+- iOS SwiftData scaffold: `examples/ios-swiftdata-dashboard`
+- Android Room scaffold: `examples/android-room-dashboard`
+
+Each example includes concrete `ChartSpec` files plus platform-specific source files for seeding, loading, and rendering a small dashboard.
+
 ## iOS Integration
 
 ```swift
@@ -63,5 +70,6 @@ npm install https://github.com/theamodhshetty/chartcn-mobile/releases/latest/dow
 ## Spec Lifecycle Ops
 
 - Validate: `pnpm spec:validate <file>`
+- Validate starter/example specs: `pnpm spec:validate:examples`
 - Migrate: `pnpm spec:migrate <file> --in-place`
 - Compat: `pnpm spec:compat <baseline> <candidate>`
