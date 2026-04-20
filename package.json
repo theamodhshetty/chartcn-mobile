@@ -25,6 +25,6 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^6.0.3"
   }
 }
